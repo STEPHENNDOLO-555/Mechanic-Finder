@@ -1,19 +1,514 @@
+<!-- templates/admin/single_mechanic.html -->
 {% extends "others/base3.html" %}
 {% load static %}
 
 {% block name %}
-  <div class="single">
-      <div class="single-body single-head">
-          <h1 style="margin-bottom: 2%;"></h1>
-          <img src="{{ mechanic.image.url }}" alt="{{ mechanic.username }}"/>
-          <h1><i class="fa fa-user"></i>  {{ mechanic.username }}</h1>
-          <h2><i class="fa fa-envelope"></i> {{ mechanic.email }}</h2>
-          <p><i class="fa fa-map"></i> {{ mechanic.location }}</p>
-          <p><i class="fa fa-phone"></i><a href="tel:{{ customer.phone }}">{{ mechanic.phone }}</a></p>
-          <p><i class="fa fa-home"></i>{{ mechanic.skill }}</p>
-      </div>
-  </div>
-{% endblock%}
+<div class="single-mechanic-container">
+    <div class="mechanic-profile-card">
+        <div class="profile-header">
+            <div class="profile-image-container">
+                {% if mechanic.image and mechanic.image.url %}
+                    <img src="{{ mechanic.image.url }}" alt="{{ mechanic.username }}" class="profile-image"/>
+                {% else %}
+                    <img src="{% static 'images/default-mechanic.png' %}" alt="Default Profile" class="profile-image"/>
+                {% endif %}
+                <div class="profile-status-badge">
+                    {% if mechanic.hired %}
+                        <span class="status-badge hired"><i class="fa fa-check-circle"></i> Active</span>
+                    {% else %}
+                        <span class="status-badge not-hired"><i class="fa fa-clock-o"></i> Available</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="profile-header-info">
+                <h1 class="mechanic-name">
+                    <i class="fa fa-user-circle"></i> {{ mechanic.username }}
+                </h1>
+                <p class="mechanic-skill-level">
+                    <i class="fa fa-star"></i> {{ mechanic.skill }} Mechanic
+                </p>
+            </div>
+        </div>
+        
+        <div class="profile-details">
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Email Address</label>
+                        <p>{{ mechanic.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-phone"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Phone Number</label>
+                        <p><a href="tel:{{ mechanic.phone }}">{{ mechanic.phone }}</a></p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-map-marker"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Location</label>
+                        <p>{{ mechanic.location }}</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-wrench"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Skill Level</label>
+                        <p>
+                            <span class="skill-level-badge {{ mechanic.skill|lower }}">
+                                {{ mechanic.skill }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-money"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Salary</label>
+                        <p class="salary-amount">${{ mechanic.salary }}/month</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Status</label>
+                        <p>
+                            {% if mechanic.hired %}
+                                <span class="status-text hired">Currently Hired</span>
+                            {% else %}
+                                <span class="status-text available">Available for Hire</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <a href="{{ mechanic.get_absolute_url }}" class="action-btn edit-btn">
+                <i class="fa fa-edit"></i> Edit Profile
+            </a>
+            <a href="{% url 'view_personnel' %}" class="action-btn back-btn">
+                <i class="fa fa-arrow-left"></i> Back to Personnel
+            </a>
+            {% if mechanic.hired %}
+                <a href="{% url 'attendance' %}" class="action-btn attendance-btn">
+                    <i class="fa fa-calendar-check-o"></i> View Attendance
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-<!--in this case i used object.name blah blah blah-->
-<!--{% url 'prod-update' object.id %}-->
+<style>
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    --dark-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --gray-color: #95a5a6;
+}
+
+.single-mechanic-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mechanic-profile-card {
+    max-width: 1000px;
+    width: 100%;
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.profile-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.profile-image:hover {
+    transform: scale(1.05);
+}
+
+.profile-status-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge.hired {
+    color: var(--success-color);
+}
+
+.status-badge.not-hired {
+    color: var(--warning-color);
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+.mechanic-name {
+    color: white;
+    font-size: 32px;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mechanic-skill-level {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 18px;
+    margin: 0;
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.profile-details {
+    padding: 40px;
+    background: white;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.detail-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+    background: var(--light-gray);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+.detail-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.detail-content {
+    flex: 1;
+}
+
+.detail-content label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-color);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.detail-content p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.detail-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.detail-content a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.skill-level-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.skill-level-badge.junior {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.skill-level-badge.mid-level {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.skill-level-badge.expert {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.salary-amount {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--success-color) !important;
+}
+
+.status-text {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-text.hired {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-text.available {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.profile-actions {
+    padding: 30px 40px 40px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, var(--info-color), #0b7dda);
+    color: white;
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #0b7dda, var(--info-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, var(--gray-color), #7f8c8d);
+    color: white;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #7f8c8d, var(--gray-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.attendance-btn {
+    background: linear-gradient(135deg, var(--success-color), #45a049);
+    color: white;
+}
+
+.attendance-btn:hover {
+    background: linear-gradient(135deg, #45a049, var(--success-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .single-mechanic-container {
+        padding: 20px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px;
+    }
+    
+    .mechanic-name {
+        font-size: 24px;
+    }
+    
+    .profile-details {
+        padding: 25px;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .profile-actions {
+        padding: 25px;
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        justify-content: center;
+    }
+    
+    .detail-card {
+        padding: 15px;
+    }
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading animation to images
+    const images = document.querySelectorAll('.profile-image');
+    images.forEach(img => {
+        img.addEventListener('load', function() {
+            this.style.animation = 'none';
+        });
+    });
+    
+    // Add hover effect to detail cards
+    const cards = document.querySelectorAll('.detail-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

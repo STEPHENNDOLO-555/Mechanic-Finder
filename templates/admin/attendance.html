@@ -1,18 +1,525 @@
+<!-- templates/admin/attendance.html -->
 {% extends "others/base1.html" %}
 {% load static %}
 {% load humanize %}
 
 {% block name %}
+<div class="attendance-container">
+    <div class="attendance-header">
+        <div class="header-content">
+            <div class="title-section">
+                <i class="fa fa-calendar-check-o"></i>
+                <h1>Attendance Management</h1>
+            </div>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <i class="fa fa-users"></i>
+                    <div class="stat-info">
+                        <span class="stat-number">{{ attendance|length }}</span>
+                        <span class="stat-label">Total Records</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa fa-check-circle"></i>
+                    <div class="stat-info">
+                        <span class="stat-number">
+                            {{ attendance|length }}
+                        </span>
+                        <span class="stat-label">Present Today</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="status">
-    <h5>Attendance Sheet</h5>
-    <div class="status-body">
-        {% for instance in attendance %}
-        <h1>{{ instance.id }}- Username: {{ instance.mechanic }}</h1>
-         <h2>----Present_Status: {{ instance.present_status }}</h2>
-        <p>----Signed: {{ instance.date| naturaltime }}</p>
-        {% endfor %}
+    <div class="attendance-table-container">
+        <div class="table-responsive">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th><i class="fa fa-hashtag"></i> ID</th>
+                        <th><i class="fa fa-user"></i> Mechanic Name</th>
+                        <th><i class="fa fa-clock-o"></i> Status</th>
+                        <th><i class="fa fa-calendar"></i> Date & Time</th>
+                        <th><i class="fa fa-hourglass-half"></i> Time Ago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instance in attendance %}
+                    <tr class="attendance-row">
+                        <td class="id-cell">{{ instance.id }}</td>
+                        <td class="mechanic-cell">
+                            <div class="mechanic-info">
+                                <div class="mechanic-avatar">
+                                    {% if instance.mechanic.image and instance.mechanic.image.url %}
+                                        <img src="{{ instance.mechanic.image.url }}" alt="{{ instance.mechanic.username }}">
+                                    {% else %}
+                                        <div class="avatar-placeholder">
+                                            <i class="fa fa-user"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="mechanic-details">
+                                    <strong>{{ instance.mechanic.username }}</strong>
+                                    <span class="mechanic-skill">{{ instance.mechanic.skill }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if instance.present_status == 'Yes' %}
+                                <span class="status-badge present">
+                                    <i class="fa fa-check-circle"></i> Present
+                                </span>
+                            {% else %}
+                                <span class="status-badge absent">
+                                    <i class="fa fa-times-circle"></i> Absent
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="date-cell">
+                            <i class="fa fa-calendar-alt"></i>
+                            {{ instance.date|date:"F d, Y" }}
+                            <span class="time">{{ instance.date|date:"h:i A" }}</span>
+                        </td>
+                        <td class="time-cell">
+                            <i class="fa fa-hourglass-half"></i>
+                            {{ instance.date|naturaltime }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-content">
+                                <i class="fa fa-calendar-times-o"></i>
+                                <h3>No Attendance Records</h3>
+                                <p>No attendance records found for today.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-{% endblock%}
+<style>
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    --dark-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --gray-color: #95a5a6;
+    --present-green: #d4edda;
+    --present-green-dark: #155724;
+    --absent-red: #f8d7da;
+    --absent-red-dark: #721c24;
+}
+
+.attendance-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 0;
+    margin: 0;
+}
+
+.attendance-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 40px 30px;
+    margin-bottom: 0;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.title-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.title-section i {
+    font-size: 40px;
+    animation: pulse 2s infinite;
+}
+
+.title-section h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.stats-section {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 32px;
+    opacity: 0.9;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+
+.attendance-table-container {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.table-responsive {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.attendance-table thead {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+}
+
+.attendance-table th {
+    padding: 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attendance-table th i {
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.attendance-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.attendance-table tbody tr:hover {
+    background: var(--light-gray);
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.attendance-table td {
+    padding: 20px;
+    vertical-align: middle;
+}
+
+.id-cell {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+.mechanic-cell {
+    min-width: 200px;
+}
+
+.mechanic-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mechanic-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.mechanic-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.mechanic-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.mechanic-details strong {
+    font-size: 16px;
+    color: var(--dark-color);
+    margin-bottom: 4px;
+}
+
+.mechanic-skill {
+    font-size: 11px;
+    color: var(--gray-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.present {
+    background: var(--present-green);
+    color: var(--present-green-dark);
+}
+
+.status-badge.absent {
+    background: var(--absent-red);
+    color: var(--absent-red-dark);
+}
+
+.date-cell {
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.date-cell i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.date-cell .time {
+    display: block;
+    font-size: 12px;
+    color: var(--gray-color);
+    margin-top: 4px;
+}
+
+.time-cell {
+    color: var(--gray-color);
+    font-size: 14px;
+}
+
+.time-cell i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px !important;
+}
+
+.empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.empty-content i {
+    font-size: 64px;
+    color: var(--gray-color);
+    opacity: 0.5;
+}
+
+.empty-content h3 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 24px;
+}
+
+.empty-content p {
+    margin: 0;
+    color: var(--gray-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .attendance-header {
+        padding: 25px 20px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .title-section {
+        flex-direction: column;
+    }
+    
+    .stats-section {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .attendance-table-container {
+        padding: 15px;
+    }
+    
+    .attendance-table {
+        min-width: 600px;
+    }
+    
+    .stat-card {
+        padding: 10px 15px;
+    }
+    
+    .stat-number {
+        font-size: 20px;
+    }
+    
+    .stat-card i {
+        font-size: 24px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Animation for new entries */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.attendance-row {
+    animation: fadeIn 0.3s ease-out;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover animation to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Add tooltip effect for status badges
+    const badges = document.querySelectorAll('.status-badge');
+    badges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add entrance animation to table rows
+    const rows = document.querySelectorAll('.attendance-row');
+    rows.forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.05}s`;
+    });
+});
+</script>
+{% endblock %}

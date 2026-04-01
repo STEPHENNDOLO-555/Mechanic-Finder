@@ -1,18 +1,798 @@
+<!-- templates/admin/single_customer.html -->
 {% extends "others/base3.html" %}
 {% load static %}
 
 {% block name %}
-  <div class="single">
-      <div class="single-head">
-          <h1 style="margin-bottom: 2%;"></h1>
-          <img src="{{ customer.image.url }}" alt="{{ customer.username }}"/>
-          <h1><i class="fa fa-user"></i> {{ customer.username }}</h1>
-          <h2><i class="fa fa-envelope"></i> {{ customer.email }}</h2>
-          <p><i class="fa fa-map"></i> {{ customer.location }}</p>
-          <p><i class="fa fa-phone"></i><a href="tel:{{ customer.phone }}">{{ customer.phone }}</a></p>
-      </div>
-  </div>
-{% endblock%}
+<div class="single-customer-container">
+    <div class="customer-profile-card">
+        <div class="profile-header">
+            <div class="profile-image-container">
+                {% if customer.image and customer.image.url %}
+                    <img src="{{ customer.image.url }}" alt="{{ customer.username }}" class="profile-image"/>
+                {% else %}
+                    <div class="default-avatar">
+                        <i class="fa fa-user-circle"></i>
+                    </div>
+                {% endif %}
+                <div class="profile-verified-badge">
+                    <span class="verified-badge">
+                        <i class="fa fa-check-circle"></i> Verified Customer
+                    </span>
+                </div>
+            </div>
+            <div class="profile-header-info">
+                <h1 class="customer-name">
+                    <i class="fa fa-user-circle"></i> {{ customer.username }}
+                </h1>
+                <p class="customer-since">
+                    <i class="fa fa-calendar"></i> Member since {{ customer.date_joined|default:"2024" }}
+                </p>
+            </div>
+        </div>
+        
+        <div class="profile-details">
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Email Address</label>
+                        <p>{{ customer.email }}</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-phone"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Phone Number</label>
+                        <p><a href="tel:{{ customer.phone }}">{{ customer.phone }}</a></p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-map-marker"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Location</label>
+                        <p>{{ customer.location }}</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-globe"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Coordinates</label>
+                        <p>
+                            {% if customer.latitude and customer.longitude %}
+                                Lat: {{ customer.latitude|floatformat:4 }}<br>
+                                Long: {{ customer.longitude|floatformat:4 }}
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-car"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Total Vehicles</label>
+                        <p>{{ customer.request_set.count }} Vehicle(s)</p>
+                    </div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="detail-icon">
+                        <i class="fa fa-money"></i>
+                    </div>
+                    <div class="detail-content">
+                        <label>Total Spent</label>
+                        <p class="total-spent">${{ total_spent|default:"0" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="recent-requests-section">
+            <div class="section-title">
+                <i class="fa fa-history"></i>
+                <h3>Recent Service Requests</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="requests-table">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Problem</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </thead>
+                        <tbody>
+                            {% for request in customer.request_set.all|slice:":5" %}
+                            <tr>
+                                <td>
+                                    <div class="vehicle-info">
+                                        <strong>{{ request.vehicle_name }}</strong>
+                                        <span class="vehicle-model">{{ request.vehicle_model }} ({{ request.vehicle_brand }})</span>
+                                    </div>
+                                </td>
+                                <td>{{ request.problem_description|truncatechars:50 }}</td>
+                                <td class="cost-cell">Ksh{{ request.cost }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ request.status|lower|cut:' ' }}">
+                                        {{ request.status }}
+                                    </span>
+                                </td>
+                                <td class="date-cell">{{ request.date|date:"M d, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="empty-requests">
+                                    <i class="fa fa-car"></i>
+                                    <p>No service requests yet</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if customer.request_set.count > 5 %}
+                <div class="view-all-link">
+                    <a href="#" class="view-all-btn" onclick="showAllRequests()">
+                        View All Requests <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        
+        <div class="profile-actions">
+            <a href="{{ customer.get_absolute_url }}" class="action-btn edit-btn">
+                <i class="fa fa-edit"></i> Edit Profile
+            </a>
+            <a href="{% url 'view_personnel' %}" class="action-btn back-btn">
+                <i class="fa fa-arrow-left"></i> Back to Personnel
+            </a>
+            <button onclick="viewAllRequests()" class="action-btn requests-btn">
+                <i class="fa fa-list"></i> View All Requests
+            </button>
+        </div>
+    </div>
+</div>
 
-<!--in this case i used object.name blah blah blah-->
-<!--{% url 'prod-update' object.id %}-->
+<style>
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    --dark-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --gray-color: #95a5a6;
+}
+
+.single-customer-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.customer-profile-card {
+    max-width: 1200px;
+    width: 100%;
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profile-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.profile-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.default-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.default-avatar i {
+    font-size: 80px;
+    color: white;
+    opacity: 0.9;
+}
+
+.profile-image:hover {
+    transform: scale(1.05);
+}
+
+.profile-verified-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.verified-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: white;
+    color: var(--success-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.verified-badge i {
+    margin-right: 5px;
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+.customer-name {
+    color: white;
+    font-size: 32px;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.customer-since {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 0;
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.profile-details {
+    padding: 40px;
+    background: white;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.detail-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+    background: var(--light-gray);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.detail-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+.detail-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.detail-content {
+    flex: 1;
+}
+
+.detail-content label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-color);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.detail-content p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.detail-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.detail-content a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.total-spent {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--success-color) !important;
+}
+
+.recent-requests-section {
+    padding: 0 40px 30px;
+    background: white;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-title i {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.section-title h3 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.requests-table thead {
+    background: var(--light-gray);
+}
+
+.requests-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--dark-color);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.requests-table td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.requests-table tbody tr:hover {
+    background: var(--light-gray);
+}
+
+.vehicle-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.vehicle-info strong {
+    font-size: 14px;
+    color: var(--dark-color);
+}
+
+.vehicle-model {
+    font-size: 12px;
+    color: var(--gray-color);
+}
+
+.cost-cell {
+    font-weight: 700;
+    color: var(--success-color);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-approved {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-repairing {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.status-repairingdone {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-released {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.date-cell {
+    font-size: 13px;
+    color: var(--gray-color);
+}
+
+.empty-requests {
+    text-align: center;
+    padding: 40px !important;
+}
+
+.empty-requests i {
+    font-size: 48px;
+    color: var(--gray-color);
+    opacity: 0.5;
+    margin-bottom: 10px;
+}
+
+.empty-requests p {
+    margin: 0;
+    color: var(--gray-color);
+}
+
+.view-all-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--light-gray);
+    color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 14px;
+}
+
+.view-all-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.profile-actions {
+    padding: 30px 40px 40px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, var(--info-color), #0b7dda);
+    color: white;
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #0b7dda, var(--info-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.back-btn {
+    background: linear-gradient(135deg, var(--gray-color), #7f8c8d);
+    color: white;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #7f8c8d, var(--gray-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.requests-btn {
+    background: linear-gradient(135deg, var(--success-color), #45a049);
+    color: white;
+}
+
+.requests-btn:hover {
+    background: linear-gradient(135deg, #45a049, var(--success-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .single-customer-container {
+        padding: 20px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 30px;
+    }
+    
+    .customer-name {
+        font-size: 24px;
+    }
+    
+    .profile-details {
+        padding: 25px;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .recent-requests-section {
+        padding: 0 25px 25px;
+    }
+    
+    .profile-actions {
+        padding: 25px;
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        justify-content: center;
+    }
+    
+    .detail-card {
+        padding: 15px;
+    }
+    
+    .requests-table {
+        min-width: 500px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Toast Notification for All Requests */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-notification {
+    min-width: 300px;
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    animation: slideInRight 0.3s ease-out;
+    border-left: 4px solid var(--info-color);
+}
+
+.toast-header {
+    padding: 12px 15px;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-header i {
+    color: var(--info-color);
+}
+
+.toast-header strong {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+}
+
+.toast-body {
+    padding: 12px 15px;
+    color: #666;
+    font-size: 13px;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+
+<script>
+function showToast(message, type = 'info') {
+    const toastId = 'toast-' + Date.now();
+    const icon = type === 'info' ? 'fa-info-circle' : 'fa-check-circle';
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast-notification">
+            <div class="toast-header">
+                <i class="fa ${icon}"></i>
+                <strong>Information</strong>
+                <button class="toast-close" onclick="this.closest('.toast-notification').remove()">&times;</button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    // Create container if not exists
+    if (!document.querySelector('.toast-container')) {
+        const container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const container = document.querySelector('.toast-container');
+    container.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = document.getElementById(toastId);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toastElement) toastElement.remove();
+    }, 3000);
+}
+
+function viewAllRequests() {
+    // Show all requests in a modal or expand the table
+    const allRequests = {{ customer.request_set.all|slice:":10"|safe }};
+    showToast('Showing all {{ customer.request_set.count }} requests. Check the console for details.', 'info');
+    
+    // Optional: Create a modal to show all requests
+    console.log('All requests for customer:', allRequests);
+}
+
+function showAllRequests() {
+    viewAllRequests();
+}
+
+// Add hover effect to detail cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.detail-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

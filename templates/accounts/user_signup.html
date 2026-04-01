@@ -7,10 +7,17 @@
 <body style="background: rgba(212, 205, 207, 0.5);">
    <h1 style="margin-bottom: 3%;"></h1>
   <div class="both container">
-    <form action="." enctype="multipart/form-data" method="POST">{% csrf_token %}
+    <form action="." enctype="multipart/form-data" method="POST" id="signupForm">{% csrf_token %}
         <fieldset class="field" style=" box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; border: 1px solid silver;">
              <div class="join" style="background: rgba(220, 20, 60, 0.6); text-transform: uppercase; font-family: 'Amiri', serif;">Create an Account</div>
              <br>
+             
+             <!-- Hidden fields for latitude and longitude -->
+             <input type="hidden" name="latitude" id="latitude">
+             <input type="hidden" name="longitude" id="longitude">
+             
+             <div id="location-status" class="alert alert-info" style="display:none;"></div>
+             
               <div class="form-group1">
                 <label for="image" class="col-form-label">Image:</label>
                   <br>
@@ -18,27 +25,24 @@
               </div>
               <div class="form-group1">
                 <label for="username" class="col-form-label">Username:</label>
-                <input type="text" name="username" class="form-control">
+                <input type="text" name="username" class="form-control" required>
               </div>
               <div class="form-group1">
                  <label for="password" class="col-form-label">Password:</label>
-                 <input type="text" name="password" class="form-control">
+                 <input type="password" name="password" class="form-control" required>
               </div>
               <div class="form-group1">
-                  <label for="location" class="col-form-label">Location:</label>
-                  <input type="text" name="location" class="form-control">
+                  <label for="location" class="col-form-label">Location Address:</label>
+                  <input type="text" name="location" class="form-control" required>
               </div>
               <div class="form-group1">
                  <label for="email" class="col-form-label">Email:</label>
-                 <input type="text" name="email" class="form-control">
+                 <input type="email" name="email" class="form-control" required>
               </div>
               <div class="form-group1">
                  <label for="phone" class="col-form-label">Phone:</label>
-                 <input type="text" name="phone" class="form-control">
+                 <input type="text" name="phone" class="form-control" required>
               </div>
-<!--              <div>-->
-<!--                {{ form|crispy }}-->
-<!--              </div>-->
              <br>
            <div class="sign-in">
              <button type="submit" class="btn btn-primary" style="background: rgba(220, 20, 60, 0.6);
@@ -48,5 +52,102 @@
     </form>
   </div>
 
+  <script>
+    // Same JavaScript as above
+    function getLocation() {
+        const statusDiv = document.getElementById('location-status');
+        
+        if (!navigator.geolocation) {
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'alert alert-warning';
+            statusDiv.innerHTML = 'Geolocation is not supported by your browser. Please enter your location manually.';
+            return;
+        }
+        
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'alert alert-info';
+        statusDiv.innerHTML = 'Requesting your location...';
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+                
+                statusDiv.className = 'alert alert-success';
+                statusDiv.innerHTML = `Location captured successfully! (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`;
+                
+                getAddressFromCoordinates(latitude, longitude);
+                
+                setTimeout(function() {
+                    statusDiv.style.display = 'none';
+                }, 3000);
+            },
+            function(error) {
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'alert alert-danger';
+                
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        statusDiv.innerHTML = 'Location access denied. Please allow location access or enter your location manually.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        statusDiv.innerHTML = 'Location information is unavailable. Please enter your location manually.';
+                        break;
+                    case error.TIMEOUT:
+                        statusDiv.innerHTML = 'Location request timed out. Please enter your location manually.';
+                        break;
+                    default:
+                        statusDiv.innerHTML = 'An error occurred while getting location. Please enter your location manually.';
+                        break;
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    }
+    
+    function getAddressFromCoordinates(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    const locationInput = document.querySelector('input[name="location"]');
+                    if (locationInput && !locationInput.value) {
+                        locationInput.value = data.display_name;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Reverse geocoding error:', error);
+            });
+    }
+    
+    window.addEventListener('load', function() {
+        getLocation();
+    });
+    
+    const addRetryButton = function() {
+        const form = document.getElementById('signupForm');
+        const retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.className = 'btn btn-secondary mt-2';
+        retryBtn.innerHTML = 'Retry Location';
+        retryBtn.onclick = function(e) {
+            e.preventDefault();
+            getLocation();
+        };
+        
+        const signInDiv = document.querySelector('.sign-in');
+        signInDiv.parentNode.insertBefore(retryBtn, signInDiv);
+    };
+    
+    addRetryButton();
+  </script>
 </body>
 {% endblock %}

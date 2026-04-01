@@ -1,33 +1,629 @@
+<!-- templates/personnel/view_personnel.html -->
 {% extends "others/base1.html" %}
 {% load static %}
 
 {% block name %}
-<div class="person">
-    <div class="person-head">
-        <div class="person-body">
-            <h1>Customer</h1>
-            {% for instance in customer %}
-            <div class="person-born">
-                <h2>{{ instance.id }}-{{ instance.username }}</h2>
-                <div class="person-child">
-                    <p><a class="btn btn-primary" href="{{ instance.get_absolute_url }}"><i class="fa fa-edit"></i></a>
-                        <span><a class="btn btn-danger" href="{{ instance.get_person }}"><i class="fa fa-trash"></i></a></span></p>
-                </div>
+<div class="person-fullwidth">
+    <!-- Customers Table -->
+    <div class="person-body customer-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fa fa-users"></i>
+                <h1>Customer Management</h1>
             </div>
-            {% endfor %}
+            <div class="section-stats">
+                <span class="stat-badge">Total: {{ customer|length }}</span>
+            </div>
         </div>
-        <div style="color: red;" class="person-body">
-            <h1>Mechanic</h1>
-            {% for instance in mechanic %}
-            <div class="person-born">
-                <h2>{{ instance.id }}-{{ instance.username }}</h2>
-                <div class="person-child">
-                    <p><a class="btn btn-primary" href="{{ instance.get_absolute_url }}"><i class="fa fa-edit"></i></a>
-                        <span><a class="btn btn-danger" href="{{ instance.get_person }}"><i class="fa fa-trash"></i></a></span></p>
-                </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </thead>
+                <tbody>
+                    {% for instance in customer %}
+                    <tr id="customer-row-{{ instance.id }}">
+                        <td class="id-cell">{{ instance.id }}</td>
+                        <td>{{ instance.username }}</td>
+                        <td>{{ instance.email }}</td>
+                        <td>{{ instance.phone }}</td>
+                        <td>{{ instance.location }}</td>
+                        <td class="action-buttons">
+                            <a class="btn-edit" href="{{ instance.get_absolute_url }}">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                            <a class="btn-delete" href="{{ instance.get_person }}" data-name="{{ instance.username }}" data-type="customer" data-id="{{ instance.id }}">
+                                <i class="fa fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Mechanics Table -->
+    <div class="person-body mechanic-section">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fa fa-wrench"></i>
+                <h1>Mechanic Management</h1>
             </div>
-            {% endfor %}
+            <div class="section-stats">
+                <span class="stat-badge">Total: {{ mechanic|length }}</span>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Location</th>
+                        <th>Skill</th>
+                        <th>Salary</th>
+                        <th>Hired</th>
+                        <th>Actions</th>
+                    </thead>
+                <tbody>
+                    {% for instance in mechanic %}
+                    <tr id="mechanic-row-{{ instance.id }}">
+                        <td class="id-cell">{{ instance.id }}</td>
+                        <td>{{ instance.username }}</td>
+                        <td>{{ instance.email }}</td>
+                        <td>{{ instance.phone }}</td>
+                        <td>{{ instance.location }}</td>
+                        <td>
+                            <span class="skill-badge {{ instance.skill|lower }}">
+                                {{ instance.skill }}
+                            </span>
+                        </td>
+                        <td class="salary-cell">${{ instance.salary }}</td>
+                        <td>
+                            {% if instance.hired %}
+                                <span class="status-badge hired">✓ Hired</span>
+                            {% else %}
+                                <span class="status-badge not-hired">✗ Not Hired</span>
+                            {% endif %}
+                        </td>
+                        <td class="action-buttons">
+                            <a class="btn-edit" href="{{ instance.get_absolute_url }}">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                            <a class="btn-delete" href="{{ instance.get_person }}" data-name="{{ instance.username }}" data-type="mechanic" data-id="{{ instance.id }}">
+                                <i class="fa fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
-{% endblock%}
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<style>
+/* Force full width - Override all parent containers */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Override any container classes from base template */
+.container, .container-fluid, .main-container, [class*="container"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.person-fullwidth {
+    width: 100vw !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    position: relative;
+    left: 0;
+    right: 0;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+}
+
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --gray-color: #95a5a6;
+}
+
+.person-body {
+    background: white;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.person-body:first-child {
+    margin-top: 0;
+}
+
+.person-body:last-child {
+    margin-bottom: 0;
+}
+
+.person-body:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    width: 100%;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.section-title i {
+    font-size: 32px;
+    animation: pulse 2s infinite;
+}
+
+.section-title h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.section-stats .stat-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    padding: 0;
+}
+
+.table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.table thead th {
+    background: #f8f9fa;
+    color: var(--dark-color);
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 15px 20px;
+    border-bottom: 2px solid #e9ecef;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 15px 20px;
+    vertical-align: middle;
+    border: none;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.id-cell {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+.salary-cell {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.skill-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.skill-badge.junior {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.skill-badge.mid-level {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.skill-badge.expert {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.hired {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-badge.not-hired {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.action-buttons {
+    white-space: nowrap;
+}
+
+.btn-edit, .btn-delete {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 5px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, var(--info-color), #0b7dda);
+    color: white;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #0b7dda, var(--info-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, var(--danger-color), #d32f2f);
+    color: white;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #d32f2f, var(--danger-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Toast Styles */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-notification {
+    min-width: 350px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideInRight 0.3s ease-out;
+    overflow: hidden;
+}
+
+.toast-notification.toast-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast-notification.toast-error {
+    border-left: 4px solid var(--danger-color);
+}
+
+.toast-notification.toast-warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.toast-notification.toast-info {
+    border-left: 4px solid var(--info-color);
+}
+
+.toast-header {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-header i {
+    font-size: 20px;
+}
+
+.toast-success .toast-header i {
+    color: var(--success-color);
+}
+
+.toast-error .toast-header i {
+    color: var(--danger-color);
+}
+
+.toast-header strong {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--gray-color);
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: var(--dark-color);
+}
+
+.toast-body {
+    padding: 15px 20px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .table {
+        min-width: 1000px;
+    }
+}
+
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .section-title {
+        flex-direction: column;
+    }
+    
+    .table {
+        min-width: 800px;
+    }
+    
+    .btn-edit, .btn-delete {
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .toast-notification {
+        min-width: 280px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast function
+    function showToast(message, type = 'success') {
+        const toastId = 'toast-' + Date.now();
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+        
+        const titles = {
+            success: 'Success!',
+            error: 'Error!',
+            warning: 'Warning!',
+            info: 'Information'
+        };
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast-notification toast-${type}">
+                <div class="toast-header">
+                    <i class="fa ${icons[type]}"></i>
+                    <strong>${titles[type]}</strong>
+                    <button class="toast-close" onclick="this.closest('.toast-notification').remove()">&times;</button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        const container = document.querySelector('.toast-container');
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.getElementById(toastId);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toastElement) {
+                toastElement.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    if (toastElement) toastElement.remove();
+                }, 300);
+            }
+        }, 3000);
+        
+        // Remove on click
+        toastElement.querySelector('.toast-close').addEventListener('click', function() {
+            toastElement.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => toastElement.remove(), 300);
+        });
+    }
+    
+    // Get URL parameters for messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    const status = urlParams.get('status');
+    
+    // Show toast if message exists
+    if (message) {
+        showToast(decodeURIComponent(message), status === 'success' ? 'success' : 'error');
+        // Remove parameters from URL without reloading
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
+    // Add click handler for delete buttons to show confirmation
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const name = this.getAttribute('data-name');
+            const type = this.getAttribute('data-type');
+            const confirmMessage = `Are you sure you want to delete ${type} "${name}"?`;
+            
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Show toast for successful deletion (if redirected back)
+            showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully!`, 'success');
+        });
+    });
+    
+    // Add hover effect to table rows
+    const rows = document.querySelectorAll('.table tbody tr');
+    rows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+});
+</script>
+{% endblock %}

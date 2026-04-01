@@ -12,6 +12,8 @@ class Customer(models.Model):
     image = models.ImageField(upload_to="images/", blank=True, null=True)
     location = models.CharField(max_length=255)
     phone = models.CharField(max_length=100, null=False)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     def __str__(self):
         return self.username
@@ -69,6 +71,8 @@ class Mechanic(models.Model):
     image = models.ImageField(upload_to="images/", blank=True, null=True)
     location = models.CharField(max_length=255)
     phone = models.CharField(max_length=100, null=False)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     level = [
         ('Junior', 'Junior'),
         ('Mid-Level', 'Mid-Level'),
@@ -76,7 +80,7 @@ class Mechanic(models.Model):
     ]
     skill = models.CharField(max_length=100, choices=level, null=False)
     salary = models.PositiveIntegerField(null=True)
-    hired = models.BooleanField(default=False)
+    hired = models.BooleanField(default=True)
 
     def __str__(self):
         return self.username
@@ -134,7 +138,7 @@ class Request(models.Model):
         ('four wheeler', 'four wheeler')
     ]
     category = models.CharField(max_length=100, choices=type)
-    vehicle_no = models.PositiveIntegerField(null=False)
+    vehicle_no = models.CharField(max_length=100,   null=False)
     vehicle_name = models.CharField(max_length=100, null=False)
     vehicle_model = models.CharField(max_length=100, null=False)
     vehicle_brand = models.CharField(max_length=100, null=False)

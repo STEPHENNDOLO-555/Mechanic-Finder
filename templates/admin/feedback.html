@@ -1,20 +1,771 @@
+<!-- templates/admin/feedback.html -->
 {% extends "others/base1.html" %}
 {% load static %}
 {% load humanize %}
 
 {% block name %}
-<div class="status">
-    <h5>Feedback Record</h5>
-    <div class="status-body">
+<div class="feedback-container">
+    <div class="feedback-header">
+        <div class="header-content">
+            <div class="title-section">
+                <i class="fa fa-comments"></i>
+                <h1>Customer Feedback</h1>
+            </div>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <i class="fa fa-commenting"></i>
+                    <div class="stat-info">
+                        <span class="stat-number">{{ feedback|length }}</span>
+                        <span class="stat-label">Total Feedback</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa fa-star"></i>
+                    <div class="stat-info">
+                        <span class="stat-number">4.5</span>
+                        <span class="stat-label">Avg Rating</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feedback-grid">
         {% for instance in feedback %}
-        <h1>{{ instance.id }}- Username: {{ instance.username }}</h1>
-        <h2>----message: {{ instance.message }}</h2>
-        {% if instance.date is None %}
-        <p>----Posted: 3 Days ago</p>
-        {% else %}
-        <p>----Posted: {{ instance.date| naturaltime }}</p>
-        {% endif %}
+        <div class="feedback-card" id="feedback-{{ instance.id }}">
+            <div class="card-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if instance.username|first %}
+                            <div class="avatar-initials">
+                                {{ instance.username|make_list|first|upper }}
+                            </div>
+                        {% else %}
+                            <i class="fa fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <div class="user-details">
+                        <h3 class="username">{{ instance.username }}</h3>
+                        <div class="feedback-time">
+                            <i class="fa fa-clock-o"></i>
+                            {% if instance.date %}
+                                {{ instance.date|naturaltime }}
+                            {% else %}
+                                3 days ago
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="feedback-actions">
+                    <button class="action-btn delete-feedback" data-id="{{ instance.id }}" data-username="{{ instance.username }}">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="feedback-message">
+                    <i class="fa fa-quote-left"></i>
+                    <p>{{ instance.message }}</p>
+                    <i class="fa fa-quote-right"></i>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="feedback-meta">
+                    <span class="feedback-id">#{{ instance.id }}</span>
+                    {% if instance.date %}
+                        <span class="feedback-date">
+                            <i class="fa fa-calendar"></i> {{ instance.date|date:"F d, Y" }}
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="feedback-rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star-half-o"></i>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-content">
+                <i class="fa fa-comments-o"></i>
+                <h3>No Feedback Yet</h3>
+                <p>Be the first to share your experience with us!</p>
+            </div>
+        </div>
         {% endfor %}
     </div>
 </div>
-{% endblock%}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-exclamation-triangle"></i> Confirm Delete
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete feedback from <strong id="deleteUsername"></strong>?</p>
+                <p class="text-danger">This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Feedback</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<style>
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    --dark-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --border-color: #e9ecef;
+    --gray-color: #95a5a6;
+}
+
+.feedback-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 0;
+    margin: 0;
+}
+
+.feedback-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 40px 30px;
+    margin-bottom: 0;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.title-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.title-section i {
+    font-size: 40px;
+    animation: pulse 2s infinite;
+}
+
+.title-section h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.stats-section {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 32px;
+    opacity: 0.9;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 5px;
+}
+
+.feedback-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.feedback-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    animation: slideUp 0.5s ease-out;
+    position: relative;
+}
+
+.feedback-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    padding: 20px 25px;
+    background: linear-gradient(135deg, var(--light-gray) 0%, white 100%);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+.avatar-initials {
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.username {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.feedback-time {
+    font-size: 12px;
+    color: var(--gray-color);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.feedback-time i {
+    font-size: 12px;
+}
+
+.feedback-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    color: var(--gray-color);
+}
+
+.action-btn:hover {
+    background: rgba(244, 67, 54, 0.1);
+    color: var(--danger-color);
+    transform: scale(1.1);
+}
+
+.card-body {
+    padding: 25px;
+    background: white;
+    min-height: 150px;
+}
+
+.feedback-message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.feedback-message i:first-child {
+    color: var(--primary-color);
+    font-size: 20px;
+    opacity: 0.5;
+    margin-top: 5px;
+}
+
+.feedback-message i:last-child {
+    color: var(--primary-color);
+    font-size: 20px;
+    opacity: 0.5;
+    align-self: flex-end;
+    margin-bottom: 5px;
+}
+
+.feedback-message p {
+    margin: 0;
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--dark-color);
+    font-style: italic;
+}
+
+.card-footer {
+    padding: 15px 25px;
+    background: var(--light-gray);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.feedback-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+}
+
+.feedback-id {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.feedback-date {
+    color: var(--gray-color);
+}
+
+.feedback-date i {
+    margin-right: 5px;
+}
+
+.feedback-rating {
+    color: #ffc107;
+    font-size: 14px;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.empty-content i {
+    font-size: 80px;
+    color: var(--gray-color);
+    opacity: 0.5;
+    margin-bottom: 20px;
+}
+
+.empty-content h3 {
+    margin: 0 0 10px 0;
+    color: var(--dark-color);
+    font-size: 24px;
+}
+
+.empty-content p {
+    margin: 0;
+    color: var(--gray-color);
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--danger-color), #d32f2f);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    border: none;
+}
+
+.modal-header .close {
+    color: white;
+    opacity: 1;
+}
+
+.modal-header .close:hover {
+    opacity: 0.8;
+}
+
+.modal-title i {
+    margin-right: 10px;
+}
+
+.modal-footer .btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #d32f2f);
+    border: none;
+    padding: 8px 20px;
+}
+
+.modal-footer .btn-secondary {
+    background: var(--gray-color);
+    border: none;
+    padding: 8px 20px;
+}
+
+/* Toast Styles */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-notification {
+    min-width: 350px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideInRight 0.3s ease-out;
+    overflow: hidden;
+}
+
+.toast-notification.toast-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast-notification.toast-error {
+    border-left: 4px solid var(--danger-color);
+}
+
+.toast-header {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-header i {
+    font-size: 20px;
+}
+
+.toast-success .toast-header i {
+    color: var(--success-color);
+}
+
+.toast-error .toast-header i {
+    color: var(--danger-color);
+}
+
+.toast-header strong {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--gray-color);
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: var(--dark-color);
+}
+
+.toast-body {
+    padding: 15px 20px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .feedback-header {
+        padding: 25px 20px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .title-section {
+        flex-direction: column;
+    }
+    
+    .stats-section {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .feedback-grid {
+        padding: 20px;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .stat-card {
+        padding: 10px 15px;
+    }
+    
+    .stat-number {
+        font-size: 20px;
+    }
+    
+    .stat-card i {
+        font-size: 24px;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .feedback-message {
+        text-align: center;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .toast-notification {
+        min-width: 280px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast function
+    function showToast(message, type = 'success') {
+        const toastId = 'toast-' + Date.now();
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+        
+        const titles = {
+            success: 'Success!',
+            error: 'Error!',
+            warning: 'Warning!',
+            info: 'Information'
+        };
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast-notification toast-${type}">
+                <div class="toast-header">
+                    <i class="fa ${icons[type]}"></i>
+                    <strong>${titles[type]}</strong>
+                    <button class="toast-close" onclick="this.closest('.toast-notification').remove()">&times;</button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        const container = document.querySelector('.toast-container');
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.getElementById(toastId);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toastElement) {
+                toastElement.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    if (toastElement) toastElement.remove();
+                }, 300);
+            }
+        }, 3000);
+    }
+    
+    let deleteId = null;
+    let deleteUsername = null;
+    
+    // Delete button click handler
+    const deleteButtons = document.querySelectorAll('.delete-feedback');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            deleteId = this.getAttribute('data-id');
+            deleteUsername = this.getAttribute('data-username');
+            document.getElementById('deleteUsername').textContent = deleteUsername;
+            $('#deleteModal').modal('show');
+        });
+    });
+    
+    // Confirm delete
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (deleteId) {
+            // Make AJAX request to delete feedback
+            fetch(`/feedback/${deleteId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    $('#deleteModal').modal('hide');
+                    // Remove the feedback card
+                    const feedbackCard = document.getElementById(`feedback-${deleteId}`);
+                    if (feedbackCard) {
+                        feedbackCard.style.animation = 'slideOutRight 0.3s ease-out';
+                        setTimeout(() => feedbackCard.remove(), 300);
+                    }
+                } else {
+                    showToast(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Error deleting feedback', 'error');
+            });
+        }
+    });
+    
+    // Add hover animation to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

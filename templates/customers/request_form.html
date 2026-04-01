@@ -1,57 +1,1023 @@
+<!-- customers/request_form.html -->
 {% extends "others/base1.html" %}
-{% load crispy_forms_tags %}
 {% load static %}
 
 {% block name %}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<body style="background: rgba(212, 205, 207, 0.5);">
-<h1 style="margin-bottom: 3%;"></h1>
-<div class="both container">
-    <form action="." enctype="multipart/form-data" method="POST">{% csrf_token %}
-        <fieldset class="field" style=" box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; border: 1px solid silver;">
-            <div class="join"
-                 style="background: rgba(220, 20, 60, 0.6); text-transform: uppercase; font-family: 'Amiri', serif;">
-                Request Form
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Full Width Container */
+        .full-width-container {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .hero-section p {
+            font-size: 18px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Location Status Card */
+        .location-card {
+            max-width: 1400px;
+            margin: -30px auto 30px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .location-status {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .location-info {
+            flex: 1;
+        }
+
+        .location-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .location-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .location-badge.warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .location-coords {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .location-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+
+        .location-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Map Section - Full Width */
+        .map-section {
+            width: 100%;
+            padding: 0;
+            margin-bottom: 40px;
+        }
+
+        .map-card {
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .map-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            color: white;
+        }
+
+        .map-header h3 {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .map-header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        #map {
+            height: 550px;
+            width: 100%;
+            background: #f0f0f0;
+        }
+
+        .map-legend {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legend-marker {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+        }
+
+        .legend-marker.customer {
+            background: #2196F3;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #2196F3;
+        }
+
+        .legend-marker.mechanic {
+            background: #dc143c;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #dc143c;
+        }
+
+        .legend-radius {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid #2196F3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        /* Mechanics Grid */
+        .mechanics-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h2 {
+            font-size: 36px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .section-title p {
+            color: rgba(255,255,255,0.9);
+            font-size: 16px;
+        }
+
+        .mechanics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .mechanic-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .mechanic-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .distance-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 1;
+        }
+
+        .mechanic-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .mechanic-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 0 auto;
+        }
+
+        .default-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 4px solid white;
+        }
+
+        .default-avatar i {
+            font-size: 50px;
+            color: white;
+        }
+
+        .mechanic-card-body {
+            padding: 25px;
+        }
+
+        .mechanic-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .mechanic-details {
+            margin: 15px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .skill-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .skill-junior { background: #e3f2fd; color: #1976d2; }
+        .skill-mid-level { background: #fff3e0; color: #f57c00; }
+        .skill-expert { background: #e8f5e9; color: #388e3c; }
+
+        .book-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            width: 90%;
+            max-width: 650px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .mechanic-info-modal {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mechanic-info-modal img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .mechanic-details-modal h4 {
+            margin: 0 0 5px 0;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group label i {
+            margin-right: 8px;
+            color: #667eea;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            min-width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-success { border-left: 4px solid #4caf50; }
+        .toast-error { border-left: 4px solid #f44336; }
+        .toast-warning { border-left: 4px solid #ff9800; }
+
+        .toast-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast-header i { font-size: 24px; }
+        .toast-success .toast-header i { color: #4caf50; }
+        .toast-error .toast-header i { color: #f44336; }
+
+        .toast-header strong {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .toast-body {
+            padding: 15px 20px;
+            color: #666;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section h1 { font-size: 32px; }
+            .location-status { flex-direction: column; text-align: center; }
+            .mechanics-grid { grid-template-columns: 1fr; }
+            .modal-content { margin: 10% auto; width: 95%; }
+            .toast-notification { min-width: 280px; left: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="full-width-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <i class="fas fa-wrench"></i>
             </div>
-            <br>
-            <div class="form-group1">
-                <label for="category" class="col-form-label">Category:</label>
-                <select class="form-control" name="category">
-                    <option value="two wheeler with gear">two wheeler with gear</option>
-                    <option value="two wheeler without gear">two wheeler without gear</option>
-                    <option value="three wheeler">three wheeler</option>
-                    <option value="four wheeler">four wheeler</option>
-                </select>
+            <h1>Find Your Perfect Mechanic</h1>
+            <p>Connect with skilled mechanics near you. Get your vehicle back on the road quickly and efficiently.</p>
+        </div>
+    </div>
+
+    <!-- Location Status Card -->
+    <div class="location-card">
+        <div class="location-status">
+            <div class="location-info">
+                {% if customer_has_location %}
+                    <div class="location-badge success">
+                        <i class="fas fa-check-circle"></i>
+                        Location Detected
+                    </div>
+                    <div class="location-coords">
+                        <i class="fas fa-map-marker-alt"></i> Latitude: {{ customer.latitude|floatformat:4 }}, Longitude: {{ customer.longitude|floatformat:4 }}
+                    </div>
+                {% else %}
+                    <div class="location-badge warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Location Not Set
+                    </div>
+                    <div class="location-coords">
+                        Please share your location to see nearby mechanics
+                    </div>
+                {% endif %}
             </div>
-            <div class="form-group1">
-                <label for="vehicle_no" class="col-form-label">Vehicle_no:</label>
-                <input type="text" name="vehicle_no" class="form-control">
+            <button id="getLocationBtn" class="location-btn">
+                <i class="fas fa-location-dot"></i>
+                {% if customer_has_location %}Update Location{% else %}Share My Location{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Map Section - Full Width -->
+    <div class="map-section">
+        <div class="map-card">
+            <div class="map-header">
+                <h3><i class="fas fa-map-marked-alt"></i> Interactive Map</h3>
+                <p>Click or hover on any marker to see mechanic details. Click to book directly from the map!</p>
             </div>
-            <div class="form-group1">
-                <label for="vehicle_name" class="col-form-label">Vehicle_name:</label>
-                <input type="text" name="vehicle_name" class="form-control">
+            <div id="map"></div>
+            <div class="map-legend">
+                <div class="legend-item">
+                    <div class="legend-marker customer"></div>
+                    <span>Your Location</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-marker mechanic"></div>
+                    <span>Mechanics (Click to Book)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-radius"></div>
+                    <span>100km Service Radius</span>
+                </div>
             </div>
-            <div class="form-group1">
-                <label for="vehicle_brand" class="col-form-label">Vehicle_brand:</label>
-                <input type="text" name="vehicle_brand" class="form-control">
+        </div>
+    </div>
+
+    <!-- Mechanics Grid Section -->
+    <div class="mechanics-section">
+        <div class="section-title">
+            <h2><i class="fas fa-users"></i> Available Mechanics</h2>
+            <p>{{ mechanics|length }} professional mechanic(s) ready to help you</p>
+        </div>
+
+        <div class="mechanics-grid">
+            {% for mechanic in mechanics %}
+            <div class="mechanic-card" data-mechanic-id="{{ mechanic.id }}">
+                {% if mechanic.distance %}
+                <div class="distance-badge">
+                    <i class="fas fa-location-arrow"></i> {{ mechanic.distance }} km
+                </div>
+                {% endif %}
+                <div class="mechanic-card-header">
+                    {% if mechanic.image_url and mechanic.image_url != '/static/images/default-profile.jpg' %}
+                        <img src="{{ mechanic.image_url }}" class="mechanic-avatar" alt="{{ mechanic.username }}">
+                    {% else %}
+                        <div class="default-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mechanic-card-body">
+                    <h3 class="mechanic-name">{{ mechanic.username }}</h3>
+                    <div class="mechanic-details">
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-star"></i> Skill Level</span>
+                            <span class="detail-value">
+                                <span class="skill-badge skill-{{ mechanic.skill|lower|cut:' ' }}">
+                                    {{ mechanic.skill }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-phone"></i> Phone</span>
+                            <span class="detail-value">{{ mechanic.phone }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
+                            <span class="detail-value">{{ mechanic.location|truncatechars:30 }}</span>
+                        </div>
+                        {% if mechanic.distance %}
+                        <div class="detail-row">
+                            <span class="detail-label"><i class="fas fa-road"></i> Distance</span>
+                            <span class="detail-value text-primary">{{ mechanic.distance }} km away</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button class="book-btn" data-mechanic-id="{{ mechanic.id }}">
+                        <i class="fas fa-calendar-check"></i> Book This Mechanic
+                    </button>
+                </div>
             </div>
-            <div class="form-group1">
-                <label for="vehicle_model" class="col-form-label">Vehicle_model:</label>
-                <input type="text" name="vehicle_model" class="form-control">
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; background: white; border-radius: 20px; padding: 60px;">
+                <i class="fas fa-meh" style="font-size: 64px; color: #999; margin-bottom: 20px;"></i>
+                <h3>No Mechanics Found</h3>
+                <p>{% if customer_has_location %}No mechanics within 100km. Try again later!{% else %}Please share your location to see nearby mechanics.{% endif %}</p>
             </div>
-            <div class="form-group1">
-                <label for="problem_description" class="col-form-label">Problem_description:</label>
-                <textarea name="problem_description" class="form-control"></textarea>
-            </div>
-            <br>
-            <div class="sign-in">
-                <button type="submit" class="btn btn-primary" style="background: rgba(220, 20, 60, 0.6);
-             border: 1px solid silver; font-family: 'Amiri', serif;">Submit
-                </button>
-            </div>
-        </fieldset>
-    </form>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
+<!-- Modal -->
+<div id="requestModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-tools"></i> Vehicle Service Request</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="mechanicInfo" class="mechanic-info-modal"></div>
+            <form id="requestForm">
+                {% csrf_token %}
+                <input type="hidden" name="mechanic_id" id="mechanic_id">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-car"></i> Vehicle Category</label>
+                    <select id="category" name="category" required>
+                        <option value="two wheeler with gear">Two Wheeler with Gear</option>
+                        <option value="two wheeler without gear">Two Wheeler without Gear</option>
+                        <option value="three wheeler">Three Wheeler</option>
+                        <option value="four wheeler">Four Wheeler</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-hashtag"></i> Vehicle Number</label>
+                    <input type="text" id="vehicle_no" name="vehicle_no" placeholder="e.g., KA 01 AB 1234" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-car-side"></i> Vehicle Name</label>
+                    <input type="text" id="vehicle_name" name="vehicle_name" placeholder="e.g., Honda City" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Vehicle Brand</label>
+                    <input type="text" id="vehicle_brand" name="vehicle_brand" placeholder="e.g., Honda" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Vehicle Model</label>
+                    <input type="text" id="vehicle_model" name="vehicle_model" placeholder="e.g., 2020" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-exclamation-triangle"></i> Problem Description</label>
+                    <textarea id="problem_description" name="problem_description" 
+                              placeholder="Describe the issue with your vehicle in detail..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Request
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let map;
+    let markers = [];
+    let customerMarker;
+    const mechanicsData = {{ mechanics_json|safe }};
+    
+    function showToast(message, type = 'success') {
+        const existing = document.querySelector('.toast-notification');
+        if (existing) existing.remove();
+        
+        const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+        const titles = { success: 'Success!', error: 'Error!', warning: 'Warning!' };
+        
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-header">
+                <i class="fas ${icons[type]}"></i>
+                <strong>${titles[type]}</strong>
+                <button class="toast-close">&times;</button>
+            </div>
+            <div class="toast-body">${message}</div>
+        `;
+        document.body.appendChild(toast);
+        
+        toast.querySelector('.toast-close').onclick = () => toast.remove();
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    function initMap() {
+        const center = [{{ customer.latitude|default:"-1.286389" }}, {{ customer.longitude|default:"36.817223" }}];
+        map = L.map('map').setView(center, 10);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap, © CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        {% if customer.latitude and customer.longitude %}
+            const customerLoc = [{{ customer.latitude }}, {{ customer.longitude }}];
+            L.marker(customerLoc, {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="width:40px;height:40px;background:#2196F3;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-user" style="color:white;"></i></div>',
+                    iconSize: [40, 40]
+                })
+            }).addTo(map).bindPopup('<strong>📍 Your Location</strong>');
+            
+            L.circle(customerLoc, {
+                color: '#2196F3',
+                fillColor: '#2196F3',
+                fillOpacity: 0.1,
+                radius: 100000,
+                weight: 2
+            }).addTo(map);
+        {% endif %}
+        
+        mechanicsData.forEach(mechanic => {
+            if (mechanic.latitude && mechanic.longitude) {
+                const marker = L.marker([mechanic.latitude, mechanic.longitude], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: '<div style="width:40px;height:40px;background:#dc143c;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-wrench" style="color:white;"></i></div>',
+                        iconSize: [40, 40]
+                    })
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                    <div style="min-width:200px;">
+                        <strong>${mechanic.username}</strong><br>
+                        ⭐ ${mechanic.skill}<br>
+                        📞 ${mechanic.phone}<br>
+                        📍 ${mechanic.location}<br>
+                        <button onclick="openModal(${mechanic.id})" style="background:#dc143c;color:white;border:none;padding:5px 15px;border-radius:5px;margin-top:8px;cursor:pointer;">📝 Book Now</button>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    function openModal(mechanicId) {
+        const mechanic = mechanicsData.find(m => m.id === mechanicId);
+        if (!mechanic) return;
+        
+        const imageHtml = mechanic.image_url && !mechanic.image_url.includes('default-profile.jpg') ?
+            `<img src="${mechanic.image_url}" alt="${mechanic.username}">` :
+            `<div style="width:70px;height:70px;background:#667eea;border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-user" style="font-size:30px;color:white;"></i></div>`;
+        
+        document.getElementById('mechanicInfo').innerHTML = `
+            ${imageHtml}
+            <div class="mechanic-details-modal">
+                <h4><i class="fas fa-user"></i> ${mechanic.username}</h4>
+                <p><i class="fas fa-star"></i> ${mechanic.skill} Mechanic</p>
+                <p><i class="fas fa-phone"></i> ${mechanic.phone}</p>
+                <p><i class="fas fa-map-marker-alt"></i> ${mechanic.location}</p>
+                ${mechanic.distance ? `<p><i class="fas fa-road"></i> ${mechanic.distance} km away</p>` : ''}
+            </div>
+        `;
+        document.getElementById('mechanic_id').value = mechanicId;
+        document.getElementById('requestModal').style.display = 'block';
+    }
+    
+    function closeModal() {
+        document.getElementById('requestModal').style.display = 'none';
+    }
+    
+    document.getElementById('requestForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = this.querySelector('.submit-btn');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span> Submitting...';
+        btn.disabled = true;
+        
+        const formData = {
+            mechanic_id: document.getElementById('mechanic_id').value,
+            category: document.getElementById('category').value,
+            vehicle_no: document.getElementById('vehicle_no').value,
+            vehicle_name: document.getElementById('vehicle_name').value,
+            vehicle_brand: document.getElementById('vehicle_brand').value,
+            vehicle_model: document.getElementById('vehicle_model').value,
+            problem_description: document.getElementById('problem_description').value
+        };
+        
+        try {
+            const response = await fetch('/submit-request-with-mechanic/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(formData)
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                closeModal();
+                showToast(result.message, 'success');
+                setTimeout(() => window.location.href = '/', 2000);
+            } else {
+                showToast(result.error || 'Something went wrong', 'error');
+                btn.innerHTML = original;
+                btn.disabled = false;
+            }
+        } catch (error) {
+            showToast('Network error. Please try again.', 'error');
+            btn.innerHTML = original;
+            btn.disabled = false;
+        }
+    });
+    
+    document.querySelector('.close').onclick = closeModal;
+    window.onclick = function(e) { if (e.target === document.getElementById('requestModal')) closeModal(); };
+    
+    document.querySelectorAll('.book-btn').forEach(btn => {
+        btn.addEventListener('click', () => openModal(parseInt(btn.dataset.mechanicId)));
+    });
+    
+    document.getElementById('getLocationBtn').addEventListener('click', function() {
+        if (navigator.geolocation) {
+            this.innerHTML = '<span class="loading-spinner"></span> Getting location...';
+            this.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    fetch('/update-customer-location/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude
+                        })
+                    }).then(r => r.json()).then(data => {
+                        if (data.success) window.location.reload();
+                        else showToast('Error saving location', 'error');
+                    });
+                },
+                () => { showToast('Location access denied', 'warning'); this.innerHTML = 'Share My Location'; this.disabled = false; }
+            );
+        } else {
+            showToast('Geolocation not supported', 'warning');
+        }
+    });
+    
+    document.addEventListener('DOMContentLoaded', initMap);
+</script>
 </body>
 {% endblock %}

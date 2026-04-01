@@ -1,82 +1,447 @@
 {% load static %}
-  <body>
-    <header role="banner" id="nav">
-      <nav class="navbar navbar-expand-md navbar-grey bg-dark">
-        <div class="container ">
-          <img width = "50px;" style = "border-radius: 60%;" src = "{% static 'images/logo.jpg' %}"
-                       alt = "This is a logo" ><span style="font-family: 'Great Vibes', cursive; font-size: 2.5rem; color: white;">
-             Ste<span style="color: red;">voh</span></span>
-          <button class="navbar-toggler" type="button" data-toggle="collapse"
-                  data-target="#navbarsExample05" aria-controls="navbarsExample05"
-                  aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+<style>
+    /* Modern Navbar Styles - Preserving Original Structure */
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
 
-          <div class="collapse navbar-collapse" id="navbarsExample05">
-            <ul class="navbar-nav ml-auto pl-lg-5 pl-0">
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'home' %}"
-                     style="color: white; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">Home</a>
-              </li>
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'about' %}"
-                     style="color: white; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">About</a>
-              </li>
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'contact' %}"
-                     style="color: white; font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">Contact</a>
-              </li>
-                {% if request.session.username %}
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                       style="color: white; font-family: 'Rajdhani', sans-serif;
-                       font-size: 1.2rem; font-weight: 400;">Profile</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdown04">
-                      {% if request.session.type == 'mechanic' %}
-                         <a class="dropdown-item" href="{% url 'mechanic_dashboard' %}" style="color: black;">Dashboard</a>
-                         <a class="dropdown-item" href="{% url 'mechanic_attendance' %}" style="color: black;">Attendance</a>
-                      {% elif request.session.type == 'admin' %}
-                         <a class="dropdown-item" href="{% url 'admin_dashboard' %}" style="color: black;">Dashboard</a>
-                      {% else %}
-                         <a class="dropdown-item" href="{% url 'user_dashboard' %}" style="color: black;">Dashboard</a>
-                         <a class="dropdown-item" href="{% url 'customer_request' %}" style="color: black;">Request</a>
-                         <a class="dropdown-item" href="{% url 'customer_feedback' %}" style="color: black;">Feedback</a>
-                      {% endif %}
-                    </div>
-                  </li>
-                {% else %}
-                  <li></li>
-                {% endif %}
-            </ul>
+    /* Add padding to body to prevent content from being hidden */
+    body {
+        padding-top: 80px;
+    }
 
-            <ul class="navbar-nav ml-auto pl-lg-5 pl-0">
-                <li style="visibility: hidden;">Yes</li>
-                <li class="nav-item dropdown">
-                  {% if not request.session.username %}
-                     <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false"
-                        style="color: white; font-family: 'Rajdhani',
-                        sans-serif; font-size: 1.2rem; font-weight: 400;">
-                         <i class="fa fa-external-link" aria-hidden="true"></i> Account</a>
-                   {% else %}
-                      <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false"
-                         style="color: white; font-family: 'Rajdhani',
-                         sans-serif; font-size: 1.2rem; font-weight: 400;"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a>
-                   {% endif %}
-                        <div class="dropdown-menu" aria-labelledby="dropdown04">
-                         {% if not request.session.username %}
-                            <a class="dropdown-item" href="{% url 'user_login' %}" style="color: black;">Login / Signup</a>
-                         {% else %}
-                               <a class="dropdown-item" href="{% url 'logout' %}" style="color: black;">Logout</a>
-                         {% endif %}
+    @media (max-width: 768px) {
+        body {
+            padding-top: 70px;
+        }
+    }
+
+    /* Enhanced Navbar Styling */
+    .navbar-grey.bg-dark {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Logo Container with Spinner */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+    }
+
+    .logo-wrapper {
+        position: relative;
+        display: inline-block;
+        width: auto;
+        height: auto;
+        cursor: pointer;
+    }
+
+    .logo-wrapper img {
+        transition: all 0.3s ease;
+        border-radius: 60%;
+    }
+
+    .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 60%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ff6b6b;
+        border-right-color: #ff8787;
+        animation: spinnerRotate 1s linear infinite;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .logo-wrapper:hover .spinner {
+        opacity: 1;
+    }
+
+    .logo-wrapper:hover img {
+        transform: scale(0.95);
+    }
+
+    @keyframes spinnerRotate {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+
+    /* Brand Name Styling */
+    .brand-text {
+        font-family: 'Great Vibes', cursive;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, #ffffff, #e0e0e0);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .brand-text span {
+        background: linear-gradient(135deg, #ff6b6b, #ff8787);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    /* Navigation Links Enhancement */
+    .nav-link {
+        position: relative;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem !important;
+        color: white !important;
+    }
+
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #ff6b6b, #ff8787);
+        transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::before {
+        width: 80%;
+    }
+
+    .nav-link:hover {
+        transform: translateY(-2px);
+        color: white !important;
+    }
+
+    /* Dropdown Menu Enhancement - Links are BLACK by default */
+    .dropdown-menu {
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        animation: dropdownFade 0.3s ease;
+    }
+
+    @keyframes dropdownFade {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Dropdown items - BLACK text by default */
+    .dropdown-item {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #000000 !important;  /* BLACK text - always visible */
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .dropdown-item i {
+        width: 20px;
+        font-size: 0.9rem;
+        color: #667eea;  /* Icon color remains purple */
+    }
+
+    /* Hover effect for dropdown items */
+    .dropdown-item:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        transform: translateX(5px);
+        color: #667eea !important;  /* Changes to purple on hover */
+    }
+
+    .dropdown-item:hover i {
+        color: #667eea;
+    }
+
+    /* Logout dropdown item styling - BLACK by default */
+    .dropdown-item.logout-item {
+        color: #000000 !important;  /* BLACK text for logout */
+    }
+
+    .dropdown-item.logout-item i {
+        color: #e74c3c;  /* Red icon for logout */
+    }
+
+    .dropdown-item.logout-item:hover {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c !important;  /* Red on hover */
+    }
+
+    .dropdown-item.logout-item:hover i {
+        color: #e74c3c;
+    }
+
+    /* Navbar Toggle Button Enhancement */
+    .navbar-toggler {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .navbar-toggler:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.05);
+    }
+
+    /* Mobile Responsive - Keep text white on dark background for mobile */
+    @media (max-width: 991px) {
+        .dropdown-menu {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* On mobile, dropdown items should be white on dark background */
+        .dropdown-item {
+            color: #ffffff !important;  /* White text on mobile for visibility */
+        }
+
+        .dropdown-item i {
+            color: #ff6b6b;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff6b6b !important;
+        }
+
+        .dropdown-item.logout-item {
+            color: #ffffff !important;
+        }
+
+        .dropdown-item.logout-item i {
+            color: #ff6b6b;
+        }
+
+        .dropdown-item.logout-item:hover {
+            color: #ff6b6b !important;
+        }
+    }
+
+    /* Scroll effect for navbar */
+    .navbar.scrolled {
+        background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(22, 33, 62, 0.98) 100%) !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Active link styling */
+    .nav-link.active::before {
+        width: 80%;
+    }
+
+    /* Ensure dropdown toggle has white text */
+    .dropdown-toggle {
+        color: white !important;
+    }
+
+    /* Animation for dropdown items */
+    .dropdown-item {
+        animation: fadeInUp 0.3s ease backwards;
+    }
+
+    .dropdown-item:nth-child(1) { animation-delay: 0.05s; }
+    .dropdown-item:nth-child(2) { animation-delay: 0.1s; }
+    .dropdown-item:nth-child(3) { animation-delay: 0.15s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<body>
+<header role="banner" id="nav">
+    <nav class="navbar navbar-expand-md navbar-grey bg-dark">
+        <div class="container">
+            <!-- Logo with Spinner -->
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <img width="70px" height="70px" style="border-radius: 60%;" src="{% static 'images/sus.jpg' %}" alt="Stevoh Logo">
+                    <div class="spinner"></div>
+                </div>
+                <span class="brand-text">
+                    Car <span>Mech</span>
+                </span>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarsExample05" aria-controls="navbarsExample05"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExample05">
+                <ul class="navbar-nav ml-auto pl-lg-5 pl-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}"
+                           style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">
+                            <i class="fa fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}"
+                           style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">
+                            <i class="fa fa-info-circle"></i> About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'contact' %}"
+                           style="font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 400;">
+                            <i class="fa fa-envelope"></i> Contact
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                           style="font-family: 'Rajdhani', sans-serif;
+                           font-size: 1.2rem; font-weight: 400;">
+                            <i class="fa fa-user-circle"></i> Profile
+                        </a>
+                        <div class="dropdown-menu text-black" aria-labelledby="dropdown04">
+                            {% if customer %}
+                                <a class="dropdown-item" href="{% url 'user_dashboard' %}">
+                                    <i class="fa fa-dashboard"></i> Dashboard
+                                </a>
+                                <a class="dropdown-item" href="{% url 'customer_request' %}">
+                                    <i class="fa fa-wrench"></i> Request
+                                </a>
+                                <a class="dropdown-item" href="{% url 'customer_feedback' %}">
+                                    <i class="fa fa-star"></i> Feedback
+                                </a>
+                            {% elif admin %}
+                                <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                                    <i class="fa fa-dashboard"></i> Dashboard
+                                </a>
+                            {% else %}
+                                <a class="dropdown-item" href="{% url 'mechanic_dashboard' %}">
+                                    <i class="fa fa-dashboard"></i> Dashboard
+                                </a>
+                                <a class="dropdown-item" href="{% url 'mechanic_attendance' %}">
+                                    <i class="fa fa-calendar-check-o"></i> Attendance
+                                </a>
+                            {% endif %}
                         </div>
-                </li>
-            </ul>
-          </div>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ml-auto pl-lg-5 pl-0">
+                    <li style="visibility: hidden;">Yes</li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown"
+                           aria-haspopup="true" aria-expanded="false"
+                           style="font-family: 'Rajdhani',
+                           sans-serif; font-size: 1.2rem; font-weight: 400;">
+                            <i class="fa fa-sign-out"></i> Logout
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown04">
+                            <a class="dropdown-item logout-item" href="{% url 'logout' %}">
+                                <i class="fa fa-sign-out"></i> Confirm Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </nav>
-    </header>
-    <!-- END header -->
-  </body>
+    </nav>
+</header>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Add scroll effect to navbar
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
+    // Add active class to current nav link
+    const currentLocation = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        const linkPath = link.getAttribute('href');
+        if (linkPath && currentLocation.includes(linkPath) && linkPath !== '/') {
+            link.classList.add('active');
+        } else if (linkPath === '/' && currentLocation === '/') {
+            link.classList.add('active');
+        }
+    });
+
+    // Logo hover effect with spinner
+    const logoWrapper = document.querySelector('.logo-wrapper');
+    if (logoWrapper) {
+        logoWrapper.addEventListener('mouseenter', function() {
+            const spinner = this.querySelector('.spinner');
+            if (spinner) spinner.style.opacity = '1';
+        });
+        
+        logoWrapper.addEventListener('mouseleave', function() {
+            const spinner = this.querySelector('.spinner');
+            if (spinner) spinner.style.opacity = '0';
+        });
+    }
+
+    // Smooth dropdown animation
+    $('.dropdown-toggle').on('click', function(e) {
+        e.preventDefault();
+        const $this = $(this);
+        const $dropdown = $this.next('.dropdown-menu');
+        
+        $('.dropdown-menu').not($dropdown).slideUp(200);
+        $dropdown.slideToggle(200);
+        
+        $this.attr('aria-expanded', function(i, attr) {
+            return attr === 'true' ? 'false' : 'true';
+        });
+    });
+
+    // Close dropdown when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.dropdown').length) {
+            $('.dropdown-menu').slideUp(200);
+            $('.dropdown-toggle').attr('aria-expanded', 'false');
+        }
+    });
+
+    // Prevent dropdown from closing when clicking inside
+    $('.dropdown-menu').on('click', function(e) {
+        e.stopPropagation();
+    });
+</script>
+<!-- END header -->
+</body>

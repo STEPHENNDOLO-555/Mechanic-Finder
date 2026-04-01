@@ -1,0 +1,1042 @@
+<!-- templates/admin/admin_dashboard.html -->
+{% extends "others/base3.html" %}
+{% load static %}
+
+{% block name %}
+<style>
+    /* Admin Dashboard Styles */
+    .admin-container {
+        padding: 20px;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-info h3 {
+        font-size: 28px;
+        margin: 0;
+        color: #dc143c;
+    }
+    
+    .stat-info p {
+        margin: 5px 0 0;
+        color: #666;
+    }
+    
+    .stat-icon i {
+        font-size: 40px;
+        color: #dc143c;
+    }
+    
+    /* Table Styles */
+    .table-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        overflow-x: auto;
+    }
+    
+    .table-container h3 {
+        margin: 0 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .btn-icon {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0 3px;
+    }
+    
+    .btn-edit {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-add {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background: white;
+        margin: 50px auto;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 10px;
+        animation: slideDown 0.3s;
+    }
+    
+    @keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .modal-header {
+        background: #dc143c;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-close {
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    .btn-submit {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    /* Toast Notification */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 1100;
+        animation: slideIn 0.3s;
+        border-left: 4px solid;
+    }
+    
+    .toast-success {
+        border-left-color: #28a745;
+    }
+    
+    .toast-error {
+        border-left-color: #dc3545;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Sections */
+    .section {
+        display: none;
+    }
+    
+    .section.active {
+        display: block;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        background: #2c3e50;
+        color: white;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .sidebar-header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #34495e;
+    }
+    
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .sidebar-menu li a {
+        display: block;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    
+    .sidebar-menu li a:hover,
+    .sidebar-menu li a.active {
+        background: #dc143c;
+    }
+    
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+</style>
+
+<div class="admin-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Admin Panel</h3>
+            <p>{{ admin }}</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+            <li><a href="#" data-section="customers">Customers</a></li>
+            <li><a href="#" data-section="mechanics">Mechanics</a></li>
+            <li><a href="#" data-section="requests">Requests</a></li>
+            <li><a href="#" data-section="feedback">Feedback</a></li>
+            <li><a href="#" data-section="attendance">Attendance</a></li>
+            <li><a href="#" data-section="contacts">Contacts</a></li>
+            <li><a href="#" data-section="newsletter">Newsletter</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card" data-section="customers">
+                    <div class="stat-info">
+                        <h3>{{ customer_count }}</h3>
+                        <p>Customers</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa fa-users"></i>
+                    </div>
+                </div>
+                <div class="stat-card" data-section="mechanics">
+                    <div class="stat-info">
+                        <h3>{{ mechanic_count }}</h3>
+                        <p>Mechanics</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa fa-wrench"></i>
+                    </div>
+                </div>
+                <div class="stat-card" data-section="requests">
+                    <div class="stat-info">
+                        <h3>{{ request_count }}</h3>
+                        <p>Requests</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa fa-tasks"></i>
+                    </div>
+                </div>
+                <div class="stat-card" data-section="feedback">
+                    <div class="stat-info">
+                        <h3>{{ feedback_count }}</h3>
+                        <p>Feedback</p>
+                    </div>
+                    <div class="stat-icon">
+                        <i class="fa fa-comments"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <h3>Recent Requests</h3>
+                <table>
+                    <thead>
+                        <tr><th>Customer</th><th>Vehicle</th><th>Status</th><th>Date</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for req in recent_requests %}
+                        <tr>
+                            <td>{{ req.customer.username }}</td>
+                            <td>{{ req.vehicle_name }}</td>
+                            <td><span style="background: {% if req.status == 'Pending' %}#ffc107{% else %}#28a745{% endif %}; color: white; padding: 3px 8px; border-radius: 12px;">{{ req.status }}</span></td>
+                            <td>{{ req.date }}</td>
+                            <td><button class="btn-icon btn-edit" onclick="editRequest({{ req.id }})"><i class="fa fa-edit"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Customers Section -->
+        <div id="customers-section" class="section">
+            <div class="table-container">
+                <h3>
+                    Customers
+                    <button class="btn-add" onclick="openAddCustomerModal()"><i class="fa fa-plus"></i> Add Customer</button>
+                </h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Username</th><th>Email</th><th>Phone</th><th>Location</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="customers-table">
+                        {% for customer in customers %}
+                        <tr id="customer-{{ customer.id }}">
+                            <td>{{ customer.id }}</td>
+                            <td>{{ customer.username }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.location }}</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="editCustomer({{ customer.id }})"><i class="fa fa-edit"></i></button>
+                                <button class="btn-icon btn-delete" onclick="deleteCustomer({{ customer.id }})"><i class="fa fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Mechanics Section -->
+        <div id="mechanics-section" class="section">
+            <div class="table-container">
+                <h3>
+                    Mechanics
+                    <button class="btn-add" onclick="openAddMechanicModal()"><i class="fa fa-plus"></i> Add Mechanic</button>
+                </h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Username</th><th>Email</th><th>Phone</th><th>Skill</th><th>Hired</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="mechanics-table">
+                        {% for mechanic in mechanics %}
+                        <tr id="mechanic-{{ mechanic.id }}">
+                            <td>{{ mechanic.id }}</td>
+                            <td>{{ mechanic.username }}</td>
+                            <td>{{ mechanic.email }}</td>
+                            <td>{{ mechanic.phone }}</td>
+                            <td>{{ mechanic.skill }}</td>
+                            <td>{% if mechanic.hired %}✓ Hired{% else %}✗ Not Hired{% endif %}</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="editMechanic({{ mechanic.id }})"><i class="fa fa-edit"></i></button>
+                                <button class="btn-icon btn-delete" onclick="deleteMechanic({{ mechanic.id }})"><i class="fa fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Requests Section -->
+        <div id="requests-section" class="section">
+            <div class="table-container">
+                <h3>Requests</h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Customer</th><th>Vehicle</th><th>Mechanic</th><th>Status</th><th>Cost</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="requests-table">
+                        {% for req in all_requests %}
+                        <tr id="request-{{ req.id }}">
+                            <td>{{ req.id }}</td>
+                            <td>{{ req.customer.username }}</td>
+                            <td>{{ req.vehicle_name }}</td>
+                            <td>{{ req.mechanic.username|default:"Not Assigned" }}</td>
+                            <td><span style="background: {% if req.status == 'Pending' %}#ffc107{% else %}#28a745{% endif %}; padding: 3px 8px; border-radius: 12px;">{{ req.status }}</span></td>
+                            <td>${{ req.cost|default:"0" }}</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="editRequest({{ req.id }})"><i class="fa fa-edit"></i></button>
+                                <button class="btn-icon btn-delete" onclick="deleteRequest({{ req.id }})"><i class="fa fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Feedback Section -->
+        <div id="feedback-section" class="section">
+            <div class="table-container">
+                <h3>Feedback</h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>User</th><th>Message</th><th>Date</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="feedback-table">
+                        {% for fb in feedbacks %}
+                        <tr id="feedback-{{ fb.id }}">
+                            <td>{{ fb.id }}</td>
+                            <td>{{ fb.username }}</td>
+                            <td>{{ fb.message|truncatechars:50 }}</td>
+                            <td>{{ fb.date }}</td>
+                            <td><button class="btn-icon btn-delete" onclick="deleteFeedback({{ fb.id }})"><i class="fa fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Attendance Section -->
+        <div id="attendance-section" class="section">
+            <div class="table-container">
+                <h3>
+                    Attendance
+                    <button class="btn-add" onclick="openAddAttendanceModal()"><i class="fa fa-plus"></i> Mark Attendance</button>
+                </h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Mechanic</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="attendance-table">
+                        {% for att in attendances %}
+                        <tr id="attendance-{{ att.id }}">
+                            <td>{{ att.id }}</td>
+                            <td>{{ att.mechanic.username }}</td>
+                            <td>{{ att.date|date:"Y-m-d H:i" }}</td>
+                            <td>{% if att.present_status == 'Yes' %}✓ Present{% else %}✗ Absent{% endif %}</td>
+                            <td>
+                                <button class="btn-icon btn-edit" onclick="editAttendance({{ att.id }})"><i class="fa fa-edit"></i></button>
+                                <button class="btn-icon btn-delete" onclick="deleteAttendance({{ att.id }})"><i class="fa fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Contacts Section -->
+        <div id="contacts-section" class="section">
+            <div class="table-container">
+                <h3>Contact Messages</h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="contacts-table">
+                        {% for contact in contacts %}
+                        <tr id="contact-{{ contact.id }}">
+                            <td>{{ contact.id }}</td>
+                            <td>{{ contact.name }}</td>
+                            <td>{{ contact.email }}</td>
+                            <td>{{ contact.phone }}</td>
+                            <td>{{ contact.message|truncatechars:50 }}</td>
+                            <td><button class="btn-icon btn-delete" onclick="deleteContact({{ contact.id }})"><i class="fa fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Newsletter Section -->
+        <div id="newsletter-section" class="section">
+            <div class="table-container">
+                <h3>
+                    Newsletter Subscribers
+                    <button class="btn-add" onclick="openAddNewsletterModal()"><i class="fa fa-plus"></i> Add Subscriber</button>
+                </h3>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Email</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="newsletter-table">
+                        {% for sub in newsletters %}
+                        <tr id="newsletter-{{ sub.id }}">
+                            <td>{{ sub.id }}</td>
+                            <td>{{ sub.email }}</td>
+                            <td><button class="btn-icon btn-delete" onclick="deleteNewsletter({{ sub.id }})"><i class="fa fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Modal -->
+<div id="customerModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="customerModalTitle">Add Customer</h3>
+            <span class="modal-close" onclick="closeModal('customerModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="customer-id">
+            <div class="form-group"><label>Username</label><input type="text" id="customer-username" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="customer-email" required></div>
+            <div class="form-group"><label>Phone</label><input type="text" id="customer-phone" required></div>
+            <div class="form-group"><label>Location</label><input type="text" id="customer-location" required></div>
+            <div class="form-group"><label>Password</label><input type="password" id="customer-password" required></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('customerModal')">Cancel</button>
+            <button class="btn-submit" onclick="saveCustomer()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Mechanic Modal -->
+<div id="mechanicModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="mechanicModalTitle">Add Mechanic</h3>
+            <span class="modal-close" onclick="closeModal('mechanicModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="mechanic-id">
+            <div class="form-group"><label>Username</label><input type="text" id="mechanic-username" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="mechanic-email" required></div>
+            <div class="form-group"><label>Phone</label><input type="text" id="mechanic-phone" required></div>
+            <div class="form-group"><label>Location</label><input type="text" id="mechanic-location" required></div>
+            <div class="form-group"><label>Skill</label>
+                <select id="mechanic-skill"><option>Junior</option><option>Mid-Level</option><option>Expert</option></select>
+            </div>
+            <div class="form-group"><label>Salary</label><input type="number" id="mechanic-salary"></div>
+            <div class="form-group"><label><input type="checkbox" id="mechanic-hired"> Hired</label></div>
+            <div class="form-group"><label>Password</label><input type="password" id="mechanic-password" required></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('mechanicModal')">Cancel</button>
+            <button class="btn-submit" onclick="saveMechanic()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Request Modal -->
+<div id="requestModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Edit Request</h3><span class="modal-close" onclick="closeModal('requestModal')">&times;</span></div>
+        <div class="modal-body">
+            <input type="hidden" id="request-id">
+            <div class="form-group"><label>Status</label>
+                <select id="request-status">
+                    <option>Pending</option><option>Approved</option><option>Repairing</option><option>Repairing Done</option><option>Released</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Cost ($)</label><input type="number" id="request-cost"></div>
+            <div class="form-group"><label>Mechanic</label>
+                <select id="request-mechanic"><option value="">Select Mechanic</option>{% for m in mechanics %}<option value="{{ m.id }}">{{ m.username }}</option>{% endfor %}</select>
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('requestModal')">Cancel</button><button class="btn-submit" onclick="saveRequest()">Save</button></div>
+    </div>
+</div>
+
+<!-- Attendance Modal -->
+<div id="attendanceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="attendanceModalTitle">Mark Attendance</h3><span class="modal-close" onclick="closeModal('attendanceModal')">&times;</span></div>
+        <div class="modal-body">
+            <input type="hidden" id="attendance-id">
+            <div class="form-group"><label>Mechanic</label>
+                <select id="attendance-mechanic"><option value="">Select</option>{% for m in mechanics %}<option value="{{ m.id }}">{{ m.username }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-group"><label>Status</label>
+                <select id="attendance-status"><option value="Yes">Present</option><option value="No">Absent</option></select>
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('attendanceModal')">Cancel</button><button class="btn-submit" onclick="saveAttendance()">Save</button></div>
+    </div>
+</div>
+
+<!-- Newsletter Modal -->
+<div id="newsletterModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Add Subscriber</h3><span class="modal-close" onclick="closeModal('newsletterModal')">&times;</span></div>
+        <div class="modal-body"><div class="form-group"><label>Email</label><input type="email" id="newsletter-email" required></div></div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('newsletterModal')">Cancel</button><button class="btn-submit" onclick="saveNewsletter()">Save</button></div>
+    </div>
+</div>
+
+<script>
+    // CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    
+    // Toast function
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Navigation
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = this.dataset.section;
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}-section`).classList.add('active');
+        });
+    });
+    
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const section = this.dataset.section;
+            document.querySelector(`.sidebar-menu a[data-section="${section}"]`).click();
+        });
+    });
+    
+    // Modal functions
+    function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+    
+    // Customer CRUD
+    function openAddCustomerModal() {
+        document.getElementById('customerModalTitle').textContent = 'Add Customer';
+        document.getElementById('customer-id').value = '';
+        document.getElementById('customer-form').reset();
+        document.getElementById('customerModal').style.display = 'block';
+    }
+    
+    function editCustomer(id) {
+        fetch(`/admin/api/customer/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('customerModalTitle').textContent = 'Edit Customer';
+                document.getElementById('customer-id').value = data.id;
+                document.getElementById('customer-username').value = data.username;
+                document.getElementById('customer-email').value = data.email;
+                document.getElementById('customer-phone').value = data.phone;
+                document.getElementById('customer-location').value = data.location;
+                document.getElementById('customerModal').style.display = 'block';
+            });
+    }
+    
+    function saveCustomer() {
+        const id = document.getElementById('customer-id').value;
+        const data = {
+            username: document.getElementById('customer-username').value,
+            email: document.getElementById('customer-email').value,
+            phone: document.getElementById('customer-phone').value,
+            location: document.getElementById('customer-location').value,
+            password: document.getElementById('customer-password').value
+        };
+        const url = id ? `/admin/api/customer/${id}/update/` : '/admin/api/customer/add/';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    function deleteCustomer(id) {
+        if (confirm('Delete this customer?')) {
+            fetch(`/admin/api/customer/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`customer-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Mechanic CRUD
+    function openAddMechanicModal() {
+        document.getElementById('mechanicModalTitle').textContent = 'Add Mechanic';
+        document.getElementById('mechanic-id').value = '';
+        document.getElementById('mechanic-form').reset();
+        document.getElementById('mechanicModal').style.display = 'block';
+    }
+    
+    function editMechanic(id) {
+        fetch(`/admin/api/mechanic/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('mechanicModalTitle').textContent = 'Edit Mechanic';
+                document.getElementById('mechanic-id').value = data.id;
+                document.getElementById('mechanic-username').value = data.username;
+                document.getElementById('mechanic-email').value = data.email;
+                document.getElementById('mechanic-phone').value = data.phone;
+                document.getElementById('mechanic-location').value = data.location;
+                document.getElementById('mechanic-skill').value = data.skill;
+                document.getElementById('mechanic-salary').value = data.salary;
+                document.getElementById('mechanic-hired').checked = data.hired;
+                document.getElementById('mechanicModal').style.display = 'block';
+            });
+    }
+    
+    function saveMechanic() {
+        const id = document.getElementById('mechanic-id').value;
+        const data = {
+            username: document.getElementById('mechanic-username').value,
+            email: document.getElementById('mechanic-email').value,
+            phone: document.getElementById('mechanic-phone').value,
+            location: document.getElementById('mechanic-location').value,
+            skill: document.getElementById('mechanic-skill').value,
+            salary: document.getElementById('mechanic-salary').value,
+            hired: document.getElementById('mechanic-hired').checked,
+            password: document.getElementById('mechanic-password').value
+        };
+        const url = id ? `/admin/api/mechanic/${id}/update/` : '/admin/api/mechanic/add/';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    function deleteMechanic(id) {
+        if (confirm('Delete this mechanic?')) {
+            fetch(`/admin/api/mechanic/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`mechanic-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Request CRUD
+    function editRequest(id) {
+        fetch(`/admin/api/request/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('request-id').value = data.id;
+                document.getElementById('request-status').value = data.status;
+                document.getElementById('request-cost').value = data.cost || '';
+                document.getElementById('request-mechanic').value = data.mechanic_id || '';
+                document.getElementById('requestModal').style.display = 'block';
+            });
+    }
+    
+    function saveRequest() {
+        const id = document.getElementById('request-id').value;
+        const data = {
+            status: document.getElementById('request-status').value,
+            cost: document.getElementById('request-cost').value,
+            mechanic_id: document.getElementById('request-mechanic').value
+        };
+        fetch(`/admin/api/request/${id}/update/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    function deleteRequest(id) {
+        if (confirm('Delete this request?')) {
+            fetch(`/admin/api/request/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`request-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Feedback
+    function deleteFeedback(id) {
+        if (confirm('Delete this feedback?')) {
+            fetch(`/admin/api/feedback/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`feedback-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Contact
+    function deleteContact(id) {
+        if (confirm('Delete this contact?')) {
+            fetch(`/admin/api/contact/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`contact-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Attendance
+    function openAddAttendanceModal() {
+        document.getElementById('attendanceModalTitle').textContent = 'Mark Attendance';
+        document.getElementById('attendance-id').value = '';
+        document.getElementById('attendance-form').reset();
+        document.getElementById('attendanceModal').style.display = 'block';
+    }
+    
+    function editAttendance(id) {
+        fetch(`/admin/api/attendance/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('attendanceModalTitle').textContent = 'Edit Attendance';
+                document.getElementById('attendance-id').value = data.id;
+                document.getElementById('attendance-mechanic').value = data.mechanic_id;
+                document.getElementById('attendance-status').value = data.present_status;
+                document.getElementById('attendanceModal').style.display = 'block';
+            });
+    }
+    
+    function saveAttendance() {
+        const id = document.getElementById('attendance-id').value;
+        const data = {
+            mechanic_id: document.getElementById('attendance-mechanic').value,
+            present_status: document.getElementById('attendance-status').value
+        };
+        const url = id ? `/admin/api/attendance/${id}/update/` : '/admin/api/attendance/add/';
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    function deleteAttendance(id) {
+        if (confirm('Delete this attendance record?')) {
+            fetch(`/admin/api/attendance/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`attendance-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    // Newsletter
+    function openAddNewsletterModal() {
+        document.getElementById('newsletter-email').value = '';
+        document.getElementById('newsletterModal').style.display = 'block';
+    }
+    
+    function saveNewsletter() {
+        const email = document.getElementById('newsletter-email').value;
+        fetch('/admin/api/newsletter/add/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ email: email })
+        })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    function deleteNewsletter(id) {
+        if (confirm('Delete this subscriber?')) {
+            fetch(`/admin/api/newsletter/${id}/delete/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    document.getElementById(`newsletter-${id}`).remove();
+                } else {
+                    showToast(result.error, 'error');
+                }
+            });
+        }
+    }
+    
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+    }
+</script>
+{% endblock %}

@@ -3,37 +3,611 @@
 {% load static %}
 
 {% block name %}
+<style>
+    /* Modern CSS Reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-<body style="background: rgba(212, 205, 207, 0.5);">
-   <h1 style="margin-bottom: 3%;"></h1>
-  <div class="both container">
-    <form action="." method="POST"> {% csrf_token %}
-        <fieldset class="field" style=" box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; border: 1px solid silver;">
-             <div class="join" style="background: rgba(220, 20, 60, 0.6); text-transform: uppercase; font-family: 'Amiri', serif;">Contact form</div>
-             <br>
-              <div class="form-group1">
-                <label for="name" class="col-form-label">Name:</label>
-                <input type="text" name="name" class="form-control">
-              </div>
-              <div class="form-group1">
-                 <label for="email" class="col-form-label">Email:</label>
-                 <input type="text" name="email" class="form-control">
-              </div>
-              <div class="form-group1">
-                  <label for="phone" class="col-form-label">Phone:</label>
-                  <input type="text" name="phone" class="form-control">
-              </div>
-              <div class="form-group1">
-                 <label for="message" class="col-form-label">Message:</label>
-                 <textarea name="message" class="form-control"></textarea>
-              </div>
-           <div class="sign-in">
-             <button type="submit" class="btn btn-primary" style="background: rgba(220, 20, 60, 0.6);
-             border: 1px solid silver; font-family: 'Amiri', serif;">Submit</button>
-           </div>
-         </fieldset>
-    </form>
-  </div>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        position: relative;
+        overflow-x: hidden;
+        padding: 20px;
+    }
 
-</body>
+    /* Animated Background Pattern */
+    body::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+            repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 8px);
+        animation: floatBackground 20s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes floatBackground {
+        0% {
+            transform: translate(0, 0);
+        }
+        100% {
+            transform: translate(50px, 50px);
+        }
+    }
+
+    /* Main Container */
+    .contact-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 650px;
+        margin: 0 auto;
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Contact Card */
+    .contact-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Card Header */
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        animation: shimmer 15s linear infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translate(0, 0);
+        }
+        100% {
+            transform: translate(50px, 50px);
+        }
+    }
+
+    .header-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        position: relative;
+        z-index: 1;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .header-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    .card-header h1 {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.5px;
+    }
+
+    .card-header p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0.5rem 0 0;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Card Content */
+    .card-content {
+        padding: 2.5rem;
+    }
+
+    /* Form Groups */
+    .form-group-modern {
+        margin-bottom: 1.75rem;
+        position: relative;
+    }
+
+    .form-group-modern label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group-modern label i {
+        color: #667eea;
+        font-size: 1rem;
+        width: 20px;
+    }
+
+    .form-group-modern input,
+    .form-group-modern textarea {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        background: white;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        color: #2d3748;
+    }
+
+    .form-group-modern input:focus,
+    .form-group-modern textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .form-group-modern input:hover,
+    .form-group-modern textarea:hover {
+        border-color: #cbd5e0;
+    }
+
+    .form-group-modern textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    /* Input with icon styling */
+    .input-wrapper {
+        position: relative;
+    }
+
+    /* Floating Label Effect */
+    .form-group-modern.floating {
+        position: relative;
+    }
+
+    /* Submit Button */
+    .submit-button {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .submit-button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .submit-button:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .submit-button:active {
+        transform: translateY(0);
+    }
+
+    .submit-button i {
+        font-size: 1.1rem;
+    }
+
+    /* Alert Messages */
+    .alert-message {
+        margin-bottom: 1.5rem;
+        padding: 1rem 1.25rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+        color: #22543d;
+        border-left: 4px solid #48bb78;
+    }
+
+    .alert-error {
+        background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+        color: #742a2a;
+        border-left: 4px solid #f56565;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
+        color: #2c5282;
+        border-left: 4px solid #4299e1;
+    }
+
+    .alert-message i {
+        font-size: 1.25rem;
+    }
+
+    .alert-message .close-btn {
+        margin-left: auto;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .alert-message .close-btn:hover {
+        opacity: 1;
+    }
+
+    /* Required Field Indicator */
+    .required-field::after {
+        content: '*';
+        color: #e53e3e;
+        margin-left: 4px;
+    }
+
+    /* Character Counter */
+    .char-counter {
+        text-align: right;
+        font-size: 0.7rem;
+        color: #a0aec0;
+        margin-top: 0.25rem;
+    }
+
+    /* Loading State */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .contact-container {
+            max-width: 95%;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+        }
+
+        .card-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+        }
+
+        .header-icon i {
+            font-size: 2rem;
+        }
+
+        .card-content {
+            padding: 1.75rem;
+        }
+
+        .form-group-modern input,
+        .form-group-modern textarea {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+
+        .submit-button {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .form-group-modern {
+            margin-bottom: 1.25rem;
+        }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #764ba2;
+    }
+</style>
+
+<div class="contact-container">
+    <div class="contact-card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="fa fa-envelope-open-o"></i>
+            </div>
+            <h1>Get In Touch</h1>
+            <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+        </div>
+
+        <div class="card-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-message alert-{{ message.tags }}">
+                        <i class="fa {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <i class="fa fa-times close-btn" onclick="this.parentElement.remove()"></i>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form action="." method="POST" id="contactForm">
+                {% csrf_token %}
+                
+                <div class="form-group-modern">
+                    <label for="name">
+                        <i class="fa fa-user"></i>
+                        <span class="required-field">Full Name</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" 
+                               name="name" 
+                               id="name" 
+                               class="form-control-modern" 
+                               placeholder="John Doe"
+                               required>
+                    </div>
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="email">
+                        <i class="fa fa-envelope"></i>
+                        <span class="required-field">Email Address</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="email" 
+                               name="email" 
+                               id="email" 
+                               class="form-control-modern" 
+                               placeholder="john@example.com"
+                               required>
+                    </div>
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="phone">
+                        <i class="fa fa-phone"></i>
+                        <span>Phone Number</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="tel" 
+                               name="phone" 
+                               id="phone" 
+                               class="form-control-modern" 
+                               placeholder="+254 700 000000">
+                    </div>
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="message">
+                        <i class="fa fa-commenting-o"></i>
+                        <span class="required-field">Your Message</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <textarea name="message" 
+                                  id="message" 
+                                  class="form-control-modern" 
+                                  placeholder="How can we help you? Please describe your inquiry..."
+                                  maxlength="500"
+                                  required></textarea>
+                    </div>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 500 characters
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-button" id="submitBtn">
+                    <i class="fa fa-paper-plane-o"></i>
+                    <span>Send Message</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Character counter for message field
+    const messageField = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    
+    if (messageField && charCount) {
+        function updateCharCount() {
+            const count = messageField.value.length;
+            charCount.textContent = count;
+            
+            if (count > 450) {
+                charCount.style.color = '#e53e3e';
+            } else if (count > 400) {
+                charCount.style.color = '#f39c12';
+            } else {
+                charCount.style.color = '#a0aec0';
+            }
+        }
+        
+        messageField.addEventListener('input', updateCharCount);
+        updateCharCount();
+    }
+    
+    // Form submission with loading animation
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
+            // The form will submit normally, but we show loading state
+            // If there are validation errors, this will be brief
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.disabled = false;
+                }
+            }, 3000);
+        });
+    }
+    
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert-message');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            setTimeout(() => {
+                if (alert.parentElement) alert.remove();
+            }, 300);
+        }, 5000);
+    });
+    
+    // Input validation styling
+    const inputs = document.querySelectorAll('.form-control-modern');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Add validation on blur
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value) {
+                this.style.borderColor = '#e53e3e';
+            } else if (this.type === 'email' && this.value && !this.value.match(/^[^\s@]+@([^\s@]+\.)+[^\s@]+$/)) {
+                this.style.borderColor = '#e53e3e';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+            }
+        });
+    });
+</script>
+
 {% endblock %}

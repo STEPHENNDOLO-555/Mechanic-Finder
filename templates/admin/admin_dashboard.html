@@ -2,90 +2,467 @@
 {% load static %}
 
 {% block name %}
+<style>
+    .dashboard-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+    }
 
-<div>
-    <div class="admin">
-        <div class="admin-head">
-            <div class="admin-first">
-                <h1><i class="fa fa-user" aria-hidden="true"></i> {{ admin }}</h1>
-                <p><a href="{% url 'view_personnel' %}"><i class="fa fa-users" aria-hidden="true" style="color: rgb(255, 107, 107);"></i>
-                    Personnel</a></p>
-                <p><a href="{% url 'admin_contact' %}"><i class="fa fa-phone" aria-hidden="true" style="color: rgb(255, 107, 107);"></i>
-                    Contact</a></p>
-                <p><a href="{% url 'attendance' %}"><i class="fa fa-archive" aria-hidden="true" style="color: rgb(255, 107, 107);"></i>
-                    Attendance</a></p>
-                <p><a href="{% url 'admin_letter' %}"><i class="fa fa-newspaper-o" aria-hidden="true" style="color: rgb(255, 107, 107);"></i>
-                    NewsLetter</a></p>
-                <p style="border-bottom: 0;"><a href="{% url 'admin_feedback' %}"><i class="fa fa-tasks" aria-hidden="true"
-                                                           style="color: rgb(255, 107, 107);"></i> Feedback</a></p>
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff6b6b, #ff8787);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 135, 135, 0.05));
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-icon i {
+        font-size: 2rem;
+        color: #ff6b6b;
+    }
+
+    .stat-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-subtitle {
+        font-size: 0.85rem;
+        color: #adb5bd;
+        margin: 0.5rem 0 0 0;
+    }
+
+    /* Requests Table Section */
+    .requests-section {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 1.5rem 2rem;
+        background: white;
+        border-bottom: 2px solid #f1f3f5;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3436;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-header h2 i {
+        color: #ff6b6b;
+        font-size: 1.3rem;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        padding: 0;
+    }
+
+    .requests-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .requests-table thead {
+        background: #f8f9fa;
+    }
+
+    .requests-table th {
+        padding: 1rem 1rem;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .requests-table td {
+        padding: 1rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+    }
+
+    .requests-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .requests-table tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pending {
+        background: #fff3e0;
+        color: #f39c12;
+    }
+
+    .status-approved {
+        background: #e8f5e9;
+        color: #27ae60;
+    }
+
+    .status-completed {
+        background: #e3f2fd;
+        color: #3498db;
+    }
+
+    .status-cancelled {
+        background: #fee;
+        color: #e74c3c;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        margin: 0 0.25rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-edit {
+        background: #e3f2fd;
+        color: #3498db;
+    }
+
+    .btn-edit:hover {
+        background: #3498db;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: #fee;
+        color: #e74c3c;
+    }
+
+    .btn-delete:hover {
+        background: #e74c3c;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Cost Display */
+    .cost-amount {
+        font-weight: 600;
+        color: #27ae60;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 1rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card, .requests-section {
+        animation: fadeInUp 0.6s ease-out;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card" onclick="window.location.href='{% url 'view_personnel' %}?type=customer'">
+            <div class="stat-card-content">
+                <div>
+                    <h3 class="stat-number">{{ customer_count }}</h3>
+                    <p class="stat-title">Total Customers</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa fa-users"></i>
+                </div>
             </div>
-            <div class="second-admin">
-                <div class="second-admin-head">
-                    <div class="second-admin-body">
-                        <h1>{{ customer_count }}</h1>
-                        <p><i class="fa fa-university" aria-hidden="true"></i></p>
-                    </div>
-                    <h2>Customer</h2>
-                </div>
-                <div class="second-admin-head">
-                    <div class="second-admin-body">
-                        <h1>{{ mechanic }}</h1>
-                        <p><i class="fa fa-shopping-bag" aria-hidden="true"></i></p>
-                    </div>
-                    <h2>Mechanic</h2>
-                </div>
-                <div class="second-admin-head">
-                    <div class="second-admin-body">
-                        <h1>{{ feedback }}</h1>
-                        <p><i class="fa fa-renren" aria-hidden="true"></i></p>
-                    </div>
-                    <h2>Feedback</h2>
-                </div>
-                <div class="second-admin-head">
-                    <div class="second-admin-body">
-                        <h1>{{ request }}</h1>
-                        <p><i class="fa fa-line-chart" aria-hidden="true"></i></p>
-                    </div>
-                    <h2>Request</h2>
-                </div>
-            </div>
+            <p class="stat-subtitle">
+                <i class="fa fa-arrow-right"></i> View all customers
+            </p>
         </div>
-        <div class="table-responsive">
-            <table class="table table-striped">
+
+        <div class="stat-card" onclick="window.location.href='{% url 'view_personnel' %}?type=mechanic'">
+            <div class="stat-card-content">
+                <div>
+                    <h3 class="stat-number">{{ mechanic }}</h3>
+                    <p class="stat-title">Active Mechanics</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa fa-wrench"></i>
+                </div>
+            </div>
+            <p class="stat-subtitle">
+                <i class="fa fa-arrow-right"></i> View all mechanics
+            </p>
+        </div>
+
+        <div class="stat-card" onclick="window.location.href='{% url 'admin_feedback' %}'">
+            <div class="stat-card-content">
+                <div>
+                    <h3 class="stat-number">{{ feedback }}</h3>
+                    <p class="stat-title">Total Feedback</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa fa-star"></i>
+                </div>
+            </div>
+            <p class="stat-subtitle">
+                <i class="fa fa-arrow-right"></i> View all feedback
+            </p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div>
+                    <h3 class="stat-number">{{ request }}</h3>
+                    <p class="stat-title">Service Requests</p>
+                </div>
+                <div class="stat-icon">
+                    <i class="fa fa-clipboard-list"></i>
+                </div>
+            </div>
+            <p class="stat-subtitle">
+                <i class="fa fa-chart-line"></i> Active service requests
+            </p>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="requests-section">
+        <div class="section-header">
+            <h2>
+                <i class="fa fa-tasks"></i>
+                Recent Service Requests
+            </h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="requests-table">
                 <thead>
-                <tr>
-                    <th scope="col">Customer Name</th>
-                    <th scope="col">Vehicle No.</th>
-                    <th scope="col">Vehicle Name</th>
-                    <th scope="col">Vehicle Model</th>
-                    <th scope="col">Vehicle Brand</th>
-                    <th scope="col">Problem Description</th>
-                    <th scope="col">Cost</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Edit</th>
-                    <th scope="col">Delete</th>
-                </tr>
+                    <tr>
+                        <th>Customer Name</th>
+                        <th>Vehicle No.</th>
+                        <th>Vehicle Name</th>
+                        <th>Vehicle Model</th>
+                        <th>Vehicle Brand</th>
+                        <th>Problem Description</th>
+                        <th>Cost</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {% for c,r in data %}
-                <tr>
-                    <td>{{ c.username }}</td>
-                    <td>{{ r.vehicle_no }}</td>
-                    <td>{{ r.vehicle_name }}</td>
-                    <td>{{ r.vehicle_model }}</td>
-                    <td>{{ r.vehicle_brand }}</td>
-                    <td>{{ r.problem_description }}</td>
-                    <td>${{ r.cost }}</td>
-                    <td>{{ r.status }}</td>
-                    <td><a class="btn btn-primary" href="/update_request/{{r.id}}"><i
-                            class="fa fa-edit"></i></a></td>
-                    <td><a class="btn btn-danger" href="/delete_request/{{ r.id }}"><i class="fa fa-trash"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
+                    {% for c,r in data %}
+                    <tr>
+                        <td>
+                            <strong>{{ c.username }}</strong>
+                        </td>
+                        <td>{{ r.vehicle_no }}</td>
+                        <td>{{ r.vehicle_name }}</td>
+                        <td>{{ r.vehicle_model }}</td>
+                        <td>{{ r.vehicle_brand }}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                            {{ r.problem_description|truncatechars:50 }}
+                        </td>
+                        <td class="cost-amount">${{ r.cost }}</td>
+                        <td>
+                            {% if r.status == "Pending" %}
+                                <span class="status-badge status-pending">
+                                    <i class="fa fa-clock-o"></i> Pending
+                                </span>
+                            {% elif r.status == "Approved" %}
+                                <span class="status-badge status-approved">
+                                    <i class="fa fa-check-circle"></i> Approved
+                                </span>
+                            {% elif r.status == "Completed" %}
+                                <span class="status-badge status-completed">
+                                    <i class="fa fa-check-double"></i> Completed
+                                </span>
+                            {% elif r.status == "Cancelled" %}
+                                <span class="status-badge status-cancelled">
+                                    <i class="fa fa-times-circle"></i> Cancelled
+                                </span>
+                            {% else %}
+                                <span class="status-badge">{{ r.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="action-btn btn-edit" href="/update_request/{{r.id}}" title="Edit">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a class="action-btn btn-delete" href="/delete_request/{{ r.id }}" title="Delete" 
+                               onclick="return confirm('Are you sure you want to delete this request?')">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 3rem;">
+                            <i class="fa fa-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+                            <p style="margin-top: 1rem; color: #6c757d;">No service requests found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<script>
+    // Add click handlers with proper navigation
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+        card.style.cursor = 'pointer';
+        
+        // Add ripple effect on click
+        card.addEventListener('click', function(e) {
+            let ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = (e.clientX - card.getBoundingClientRect().left) + 'px';
+            ripple.style.top = (e.clientY - card.getBoundingClientRect().top) + 'px';
+            card.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+</script>
+
+<style>
+    /* Ripple effect for cards */
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 107, 107, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+    }
+    
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+</style>
 {% endblock %}

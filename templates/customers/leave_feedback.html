@@ -1,31 +1,683 @@
+<!-- templates/admin/feedback_form.html -->
 {% extends "others/base1.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
 
 {% block name %}
+<div class="feedback-form-container">
+    <div class="form-wrapper">
+        <div class="form-header">
+            <div class="header-icon">
+                <i class="fa fa-commenting"></i>
+            </div>
+            <h1>Share Your Feedback</h1>
+            <p>We value your opinion and strive to improve our services</p>
+        </div>
+        
+        <form action="." method="POST" class="modern-form">
+            {% csrf_token %}
+            
+            <div class="form-group animated-group">
+                <label for="name" class="form-label">
+                    <i class="fa fa-user"></i>
+                    Your Name
+                </label>
+                <div class="input-wrapper">
+                    <input type="text" name="name" id="name" class="form-input" required>
+                    <div class="input-border"></div>
+                </div>
+                <span class="input-hint">Please enter your full name</span>
+            </div>
+            
+            <div class="form-group animated-group">
+                <label for="message" class="form-label">
+                    <i class="fa fa-envelope"></i>
+                    Your Message
+                </label>
+                <div class="input-wrapper">
+                    <textarea name="message" id="message" class="form-textarea" rows="5" required></textarea>
+                    <div class="input-border"></div>
+                </div>
+                <span class="input-hint">Share your experience, suggestions, or concerns</span>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <i class="fa fa-paper-plane"></i>
+                    Submit Feedback
+                </button>
+                <button type="reset" class="reset-btn">
+                    <i class="fa fa-undo"></i>
+                    Reset
+                </button>
+            </div>
+        </form>
+        
+        <div class="form-footer">
+            <div class="footer-info">
+                <i class="fa fa-shield"></i>
+                <span>Your feedback is anonymous and will be used to improve our services</span>
+            </div>
+            <div class="rating-hint">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <span>We appreciate honest feedback</span>
+            </div>
+        </div>
+    </div>
+</div>
 
-<body style="background: rgba(212, 205, 207, 0.5);">
-   <h1 style="margin-bottom: 3%;"></h1>
-  <div class="both container">
-    <form action="." method="POST"> {% csrf_token %}
-        <fieldset class="field" style=" box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; border: 1px solid silver;">
-             <div class="join" style="background: rgba(220, 20, 60, 0.6); text-transform: uppercase; font-family: 'Amiri', serif;">Feedback Form</div>
-             <br>
-              <div class="form-group1">
-                <label for="name" class="col-form-label">Name:</label>
-                <input type="text" name="name" class="form-control">
-              </div>
-              <div class="form-group1">
-                 <label for="message" class="col-form-label">Message:</label>
-                 <textarea name="message" class="form-control"></textarea>
-              </div>
-           <div class="sign-in">
-             <button type="submit" class="btn btn-primary" style="background: rgba(220, 20, 60, 0.6);
-             border: 1px solid silver; font-family: 'Amiri', serif;">Submit</button>
-           </div>
-         </fieldset>
-    </form>
-  </div>
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --dark-color: #2c3e50;
+    --light-gray: #f8f9fa;
+    --border-color: #e0e0e0;
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
 
-</body>
+.feedback-form-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.feedback-form-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: moveBackground 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes moveBackground {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
+}
+
+.form-wrapper {
+    max-width: 600px;
+    width: 100%;
+    background: white;
+    border-radius: 30px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-header {
+    background: var(--primary-gradient);
+    padding: 40px 30px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: shimmer 10s linear infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(30px, 30px);
+    }
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: pulse 2s infinite;
+}
+
+.header-icon i {
+    font-size: 40px;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.form-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.form-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.modern-form {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-label i {
+    margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    font-family: inherit;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.input-border {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transition: all 0.3s ease;
+}
+
+.form-input:focus ~ .input-border,
+.form-textarea:focus ~ .input-border {
+    width: 100%;
+    left: 0;
+}
+
+.input-hint {
+    display: block;
+    font-size: 12px;
+    color: #95a5a6;
+    margin-top: 5px;
+}
+
+.animated-group {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    animation: fadeInUp 0.5s ease-out 0.3s both;
+}
+
+.submit-btn, .reset-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-btn {
+    background: var(--primary-gradient);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.submit-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.reset-btn {
+    background: white;
+    color: var(--dark-color);
+    border: 2px solid var(--border-color);
+}
+
+.reset-btn:hover {
+    background: var(--light-gray);
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+}
+
+.form-footer {
+    background: var(--light-gray);
+    padding: 20px 30px;
+    border-top: 1px solid var(--border-color);
+}
+
+.footer-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: var(--dark-color);
+}
+
+.footer-info i {
+    color: var(--success-color);
+    font-size: 18px;
+}
+
+.rating-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+.rating-hint i {
+    color: #ffc107;
+}
+
+/* Success Message Toast */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast-notification {
+    min-width: 350px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideInRight 0.3s ease-out;
+    overflow: hidden;
+}
+
+.toast-notification.toast-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast-notification.toast-error {
+    border-left: 4px solid var(--danger-color);
+}
+
+.toast-header {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-header i {
+    font-size: 20px;
+}
+
+.toast-success .toast-header i {
+    color: var(--success-color);
+}
+
+.toast-error .toast-header i {
+    color: var(--danger-color);
+}
+
+.toast-header strong {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #95a5a6;
+    transition: color 0.3s;
+}
+
+.toast-close:hover {
+    color: var(--dark-color);
+}
+
+.toast-body {
+    padding: 15px 20px;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-wrapper {
+        margin: 20px;
+    }
+    
+    .form-header {
+        padding: 30px 20px;
+    }
+    
+    .form-header h1 {
+        font-size: 24px;
+    }
+    
+    .modern-form {
+        padding: 25px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .submit-btn, .reset-btn {
+        padding: 12px 20px;
+    }
+    
+    .toast-notification {
+        min-width: 280px;
+    }
+}
+
+/* Loading Animation for Submit Button */
+.submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.submit-btn.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast function
+    function showToast(message, type = 'success') {
+        const toastId = 'toast-' + Date.now();
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle'
+        };
+        
+        const titles = {
+            success: 'Success!',
+            error: 'Error!'
+        };
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast-notification toast-${type}">
+                <div class="toast-header">
+                    <i class="fa ${icons[type]}"></i>
+                    <strong>${titles[type]}</strong>
+                    <button class="toast-close" onclick="this.closest('.toast-notification').remove()">&times;</button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.getElementById(toastId);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toastElement) {
+                toastElement.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => toastElement.remove(), 300);
+            }
+        }, 3000);
+    }
+    
+    // Form submission handling
+    const form = document.querySelector('.modern-form');
+    const submitBtn = document.querySelector('.submit-btn');
+    
+    // Check for URL parameters to show success/error messages
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    const status = urlParams.get('status');
+    
+    if (message) {
+        showToast(decodeURIComponent(message), status === 'success' ? 'success' : 'error');
+        // Remove parameters from URL without reloading
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
+    // Add loading animation on form submit
+    form.addEventListener('submit', function(e) {
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = '<i class="fa fa-spinner"></i> Submitting...';
+        
+        // If there's an error, the page will reload with error message
+        // If success, page will reload with success message
+        setTimeout(() => {
+            submitBtn.classList.remove('loading');
+        }, 3000);
+    });
+    
+    // Reset button handler
+    const resetBtn = document.querySelector('.reset-btn');
+    resetBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        form.reset();
+        showToast('Form has been reset', 'info');
+    });
+    
+    // Add floating label effect
+    const inputs = document.querySelectorAll('.form-input, .form-textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+    });
+    
+    // Character counter for message
+    const messageInput = document.getElementById('message');
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            const charCount = this.value.length;
+            let hint = document.querySelector('#message + .input-hint');
+            if (charCount > 0) {
+                hint.textContent = `${charCount} characters typed`;
+                if (charCount > 500) {
+                    hint.style.color = '#f44336';
+                } else {
+                    hint.style.color = '#95a5a6';
+                }
+            } else {
+                hint.textContent = 'Share your experience, suggestions, or concerns';
+                hint.style.color = '#95a5a6';
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
